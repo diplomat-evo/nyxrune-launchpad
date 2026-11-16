@@ -1,0 +1,2241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>NyxRune Launchpad</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0a0d12;
+        --panel: #10141d;
+        --panel-2: #151b27;
+        --line: #232c3e;
+        --line-soft: #1a2130;
+        --text: #e9eef6;
+        --muted: #96a3b8;
+        --faint: #6b788e;
+        --gold: #e3a82b;
+        --gold-dim: #8a6a24;
+        --teal: #2fbfa5;
+        --ok: #3ecf8e;
+        --danger: #f2707a;
+        --warn: #e8b34b;
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        --sans: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      html { background: var(--bg); }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 15px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1, h2, h3, p, ul, dl, dd, figure { margin: 0; }
+      a { color: var(--teal); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      button, input, select, textarea { font-family: inherit; font-size: 0.95rem; color: var(--text); }
+      button, select, input:not([type="checkbox"], [type="radio"]) { min-height: 2.5rem; }
+      .wrap { max-width: 1160px; margin: 0 auto; padding: 0 16px 64px; }
+
+      /* ---------- header ---------- */
+      header.top {
+        border-bottom: 1px solid var(--line);
+        background: #0d1119;
+      }
+      .top-inner {
+        max-width: 1160px; margin: 0 auto; padding: 20px 16px 16px;
+        display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; justify-content: space-between;
+      }
+      .brand h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
+      .brand h1 .rune { color: var(--gold); }
+      .brand .sub { color: var(--muted); font-size: 0.92rem; margin-top: 4px; }
+      .brand .sub strong { color: var(--text); font-weight: 600; }
+      .wallet-box { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+      .btn {
+        appearance: none; border: 1px solid var(--line); background: var(--panel-2);
+        border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+      }
+      .btn:hover:not(:disabled) { border-color: var(--gold-dim); }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn-gold { background: var(--gold); border-color: var(--gold); color: #171106; }
+      .btn-gold:hover:not(:disabled) { background: #f0b93e; border-color: #f0b93e; }
+      .btn-teal { background: transparent; border-color: var(--teal); color: var(--teal); }
+      .btn-small { min-height: 2.25rem; padding: 5px 12px; font-size: 0.88rem; }
+      .wallet-addr { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+      .wallet-addr strong { color: var(--text); }
+
+      .chainbar {
+        max-width: 1160px; margin: 0 auto; padding: 0 16px 14px;
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .chip {
+        border: 1px solid var(--line); background: var(--panel); border-radius: 999px;
+        padding: 5px 12px; font-size: 0.83rem; color: var(--muted);
+        display: inline-flex; gap: 7px; align-items: baseline;
+      }
+      .chip b { color: var(--text); font-family: var(--mono); font-weight: 600; }
+      .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); align-self: center; flex: none; }
+      .chip .dot.live { background: var(--ok); }
+      .chip .dot.err { background: var(--danger); }
+
+      /* ---------- sections ---------- */
+      section.panel {
+        background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+        margin-top: 20px; padding: 20px;
+      }
+      .sec-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+      .sec-head h2 { font-size: 1.18rem; font-weight: 700; }
+      .sec-head h2 .n { color: var(--gold); font-family: var(--mono); font-size: 0.95rem; margin-right: 8px; }
+      .sec-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; max-width: 72ch; }
+      .status-line { font-size: 0.88rem; color: var(--muted); min-height: 1.3em; }
+      .status-line.err, .err-text { color: var(--danger); }
+      .ok-text { color: var(--ok); }
+      .warn-text { color: var(--warn); }
+
+      .addr { font-family: var(--mono); font-size: 0.84rem; word-break: break-all; }
+      .addr-short { font-family: var(--mono); font-size: 0.86rem; white-space: nowrap; }
+      .mono { font-family: var(--mono); }
+      .small { font-size: 0.85rem; color: var(--muted); }
+
+      /* deployment grid */
+      .dep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+      .dep-cell { border: 1px solid var(--line-soft); background: var(--panel-2); border-radius: 8px; padding: 10px 12px; }
+      .dep-cell .k { font-size: 0.78rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+
+      /* stat grid (tAMM) */
+      .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+      .stat { border: 1px solid var(--line-soft); background: var(--panel-2); border-radius: 8px; padding: 10px 12px; }
+      .stat .k { font-size: 0.78rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+      .stat .v { font-size: 1.05rem; font-weight: 600; margin-top: 2px; word-break: break-all; }
+      .stat .v.mono { font-size: 0.95rem; }
+
+      /* config rows */
+      .cfg-row {
+        display: grid; grid-template-columns: 52px 86px 1fr 1fr 1fr 110px 70px; gap: 10px; align-items: center;
+        width: 100%; text-align: left; background: var(--panel-2); border: 1px solid var(--line-soft);
+        border-radius: 8px; padding: 10px 12px; margin-top: 8px; cursor: pointer; font-weight: 400;
+      }
+      .cfg-row:hover { border-color: var(--gold-dim); }
+      .cfg-row.selected { border-color: var(--gold); }
+      .cfg-row .cid { font-family: var(--mono); font-weight: 600; font-size: 1rem; }
+      .cfg-row .lab { display: block; font-size: 0.72rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; }
+      .cfg-row .val { font-family: var(--mono); font-size: 0.85rem; word-break: break-all; }
+      .badge { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); }
+      .badge.on { color: var(--ok); border-color: var(--ok); }
+      .badge.off { color: var(--danger); border-color: var(--danger); }
+      .badge.info { color: var(--teal); border-color: var(--teal); }
+
+      /* detail definition list */
+      .detail-box { border: 1px solid var(--line); border-radius: 10px; background: #0c1017; padding: 16px; margin-top: 14px; }
+      .detail-box h3 { font-size: 1rem; margin-bottom: 10px; }
+      dl.kv { display: grid; grid-template-columns: 240px 1fr; gap: 5px 16px; }
+      dl.kv dt { color: var(--faint); font-size: 0.86rem; }
+      dl.kv dd { font-family: var(--mono); font-size: 0.86rem; word-break: break-all; }
+      dl.kv dd.plain { font-family: var(--sans); }
+      .subhead { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gold); margin: 16px 0 8px; font-weight: 600; }
+
+      /* launches */
+      .progress-track { height: 8px; background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: 999px; overflow: hidden; margin: 10px 0; }
+      .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.2s ease; }
+      .launch-card { border: 1px solid var(--line-soft); background: var(--panel-2); border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
+      .launch-card .row1 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+      .launch-card dl { display: grid; grid-template-columns: 92px 1fr; gap: 3px 12px; margin-top: 8px; }
+      .launch-card dt { color: var(--faint); font-size: 0.84rem; }
+      .launch-card dd { font-family: var(--mono); font-size: 0.84rem; word-break: break-all; }
+      .empty-box { border: 1px dashed var(--line); border-radius: 8px; padding: 16px; color: var(--muted); margin-top: 10px; }
+
+      /* forms */
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .field { display: flex; flex-direction: column; gap: 5px; }
+      .field.full { grid-column: 1 / -1; }
+      .field label { font-size: 0.86rem; font-weight: 600; color: var(--muted); }
+      .field input, .field select {
+        background: #0c1017; border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; width: 100%;
+      }
+      .field input:focus, .field select:focus { outline: 2px solid var(--gold-dim); outline-offset: 0; border-color: var(--gold); }
+      .field .hint { font-size: 0.8rem; color: var(--faint); }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; align-items: center; }
+      .seg-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .seg-toggle button { border: 0; border-radius: 0; background: var(--panel-2); padding: 8px 18px; cursor: pointer; font-weight: 600; min-height: 2.5rem; }
+      .seg-toggle button.active { background: var(--gold); color: #171106; }
+      .preview-box { border: 1px solid var(--gold-dim); border-radius: 10px; background: #0c1017; padding: 16px; margin-top: 16px; }
+      .preview-box h3 { font-size: 1rem; margin-bottom: 10px; color: var(--gold); }
+      pre.calldata {
+        font-family: var(--mono); font-size: 0.76rem; line-height: 1.5; word-break: break-all; white-space: pre-wrap;
+        background: #07090d; border: 1px solid var(--line-soft); border-radius: 8px; padding: 10px; max-height: 180px; overflow: auto; margin-top: 6px;
+      }
+      .result-box { border: 1px solid var(--teal); border-radius: 10px; background: #0c1017; padding: 16px; margin-top: 16px; }
+      .result-box h3 { font-size: 1rem; margin-bottom: 10px; color: var(--teal); }
+      .note-box { border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; padding: 10px 14px; color: var(--muted); font-size: 0.9rem; margin-top: 12px; }
+      .boot-box { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 20px; background: var(--panel); font-size: 0.92rem; }
+      footer { color: var(--faint); font-size: 0.83rem; margin-top: 28px; line-height: 1.6; }
+      [hidden] { display: none !important; }
+
+      /* ---------- wallet picker + network ---------- */
+      .wallet-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+      .wallet-net {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end;
+        font-size: 0.83rem; color: var(--muted); text-align: right;
+      }
+      .net-pill {
+        display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line);
+        background: var(--panel); border-radius: 999px; padding: 5px 11px; font-size: 0.82rem; color: var(--muted);
+      }
+      .net-pill b { color: var(--text); font-weight: 600; }
+      .net-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
+      .net-pill.ok { border-color: #1f4d3a; } .net-pill.ok .dot { background: var(--ok); }
+      .net-pill.warn { border-color: #5c4517; } .net-pill.warn .dot { background: var(--warn); }
+      .net-pill.err { border-color: #5a2a2e; } .net-pill.err .dot { background: var(--danger); }
+      .btn-ghost { background: transparent; }
+      .modal-overlay {
+        position: fixed; inset: 0; background: rgba(3,5,8,0.78); backdrop-filter: blur(3px);
+        z-index: 50; display: flex; align-items: flex-end; justify-content: center; padding: 16px;
+      }
+      @media (min-width: 640px) { .modal-overlay { align-items: center; } }
+      .modal {
+        width: 100%; max-width: 520px; max-height: min(86vh, 720px); overflow: auto;
+        background: #0e121b; border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+      }
+      .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+      .modal-head h2 { font-size: 1.15rem; font-weight: 700; line-height: 1.25; }
+      .modal-head p { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+      .modal-close {
+        flex: none; width: 36px; height: 36px; min-height: 36px; border-radius: 8px; border: 1px solid var(--line);
+        background: var(--panel-2); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0;
+      }
+      .modal-net {
+        border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2);
+        padding: 12px 14px; margin: 14px 0; font-size: 0.88rem;
+      }
+      .modal-net .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+      .modal-net p { color: var(--muted); margin-top: 6px; }
+      .wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+      @media (max-width: 480px) { .wallet-grid { grid-template-columns: 1fr; } }
+      .wallet-option {
+        display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+        border: 1px solid var(--line-soft); background: var(--panel-2); border-radius: 12px;
+        padding: 12px; cursor: pointer; min-height: 64px;
+      }
+      .wallet-option:hover:not(:disabled) { border-color: var(--gold-dim); }
+      .wallet-option:disabled { opacity: 0.55; cursor: default; }
+      .wallet-option .wicon {
+        width: 38px; height: 38px; border-radius: 10px; flex: none; overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        background: #1c2536; border: 1px solid var(--line); font-weight: 700; font-size: 0.95rem; color: var(--gold);
+      }
+      .wallet-option .wicon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+      .wallet-option .wmeta { min-width: 0; flex: 1; }
+      .wallet-option .wname { font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .wallet-option .wsub { font-size: 0.78rem; color: var(--faint); margin-top: 1px; }
+      .wallet-option .wsub.detected { color: var(--ok); }
+      .wallet-option a.winstall { font-size: 0.8rem; white-space: nowrap; }
+      .wallet-note { font-size: 0.82rem; color: var(--faint); margin-top: 14px; line-height: 1.5; }
+      .wallet-status { font-size: 0.88rem; min-height: 1.3em; margin-top: 10px; }
+      .conn-pill {
+        display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line);
+        background: var(--panel); border-radius: 999px; padding: 5px 11px; font-size: 0.82rem; color: var(--muted);
+        font-family: var(--mono); max-width: 100%;
+      }
+      .conn-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
+      .conn-pill b { color: var(--text); font-weight: 600; }
+      .conn-pill.connected { border-color: #1f4d3a; } .conn-pill.connected .dot { background: var(--ok); }
+      .conn-pill.wrongnet { border-color: #5c4517; } .conn-pill.wrongnet .dot { background: var(--warn); }
+      .btn-danger-ghost { background: transparent; border-color: #5a2a2e; color: var(--danger); }
+      .btn-danger-ghost:hover:not(:disabled) { border-color: var(--danger); }
+
+      @media (max-width: 760px) {
+        .top-inner { flex-direction: column; }
+        .wallet-box { align-items: flex-start; }
+        .wallet-actions, .wallet-net { justify-content: flex-start; text-align: left; }
+        .cfg-row { grid-template-columns: 44px 1fr 1fr; }
+        dl.kv { grid-template-columns: 1fr; gap: 2px 0; }
+        dl.kv dd { margin-bottom: 6px; }
+        .form-grid { grid-template-columns: 1fr; }
+        section.panel { padding: 16px 14px; }
+        .brand h1 { font-size: 1.4rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="top-inner">
+        <div class="brand">
+          <h1>NyxRune <span class="rune">Launchpad</span></h1>
+          <p class="sub">Built with the <strong>Ammora SDK 0.3.9</strong> on <strong>GIWA Sepolia</strong> · Ammora V4 auto-route deployment <span class="mono">v4-auto-route-20260917</span></p>
+        </div>
+        <div class="wallet-box">
+          <div class="wallet-actions">
+            <button class="btn btn-gold" id="btnConnect" type="button">Connect Wallet</button>
+            <button class="btn btn-ghost" id="btnChangeWallet" type="button" hidden>Change wallet</button>
+            <button class="btn btn-danger-ghost" id="btnDisconnect" type="button" hidden>Disconnect</button>
+          </div>
+          <div class="wallet-net" aria-label="Wallet connection status">
+            <span class="conn-pill" id="walletConnPill" role="status"><span class="dot"></span><span id="walletConnText">Not connected</span></span>
+          </div>
+          <div class="wallet-net" aria-label="Wallet network status">
+            <span class="net-pill" id="walletNetPill"><span class="dot"></span><span>Wallet network <b id="walletNetName">Not connected</b></span></span>
+            <button class="btn btn-small" id="btnSwitchNetwork" type="button" hidden>Switch to GIWA Sepolia</button>
+          </div>
+          <p class="wallet-addr" id="walletInfo">No wallet connected. Pick from MetaMask, OKX, Coinbase, Rabby, Brave, Trust and other extensions. Reads start over the public RPC; once a wallet is connected on GIWA Sepolia, reads switch to that wallet's own connection. Creating and trading need your own browser wallet.</p>
+        </div>
+      </div>
+      <div class="chainbar" aria-label="Live chain status">
+        <span class="chip"><span class="dot" id="liveDot"></span>Network <b>GIWA Sepolia</b></span>
+        <span class="chip">Chain ID <b id="chainIdVal">91342</b></span>
+        <span class="chip">RPC <b id="rpcVal">connecting…</b></span>
+        <span class="chip">Latest block <b id="blockVal">…</b></span>
+        <span class="chip">Finalized head (12 conf) <b id="finVal">…</b></span>
+        <span class="chip">Config Registry <b id="registryChip">…</b></span>
+        <span class="chip">V4 core <b id="coreVal">checking…</b></span>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="boot-box" id="bootBox">Reading GIWA Sepolia over batched JSON-RPC, with automatic failover across its public endpoints (<span class="mono">sepolia-rpc.giwa.io</span>, <span class="mono">sepolia-rpc-flashblocks.giwa.io</span> and the Pocket Network gateway). <strong>Once you connect a wallet on GIWA Sepolia, every read on this page switches to your wallet's own connection</strong> (for example OKX Wallet), which reads the chain directly and does not depend on this page being able to reach the public RPC. The Ammora SDK 0.3.9 loads in the background for creating and trading…</div>
+
+      <section class="panel" aria-labelledby="depH">
+        <div class="sec-head"><h2 id="depH">Deployment</h2><span class="small">Addresses from the Ammora SDK 0.3.9 <span class="mono">giwaSepoliaAutoRouteDeployment</span></span></div>
+        <div class="dep-grid">
+          <div class="dep-cell"><p class="k">Config Registry</p><p class="addr" id="depRegistry">…</p></div>
+          <div class="dep-cell"><p class="k">Launch Factory</p><p class="addr" id="depFactory">…</p></div>
+          <div class="dep-cell"><p class="k">Fee Policy</p><p class="addr" id="depFeePolicy">…</p></div>
+          <div class="dep-cell"><p class="k">Graduation Adapter</p><p class="addr" id="depAdapter">…</p></div>
+          <div class="dep-cell"><p class="k">WETH (wrapped native)</p><p class="addr" id="depWeth">…</p></div>
+          <div class="dep-cell"><p class="k">Deployment start block</p><p class="addr" id="depStartBlock">…</p></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="tammH">
+        <div class="sec-head"><h2 id="tammH">$tAMM market context</h2><button class="btn btn-small" id="btnTammRefresh" type="button">Refresh</button></div>
+        <p class="sec-desc">Token <span class="mono">0x10b3cc2fc981277ada576891cf649d0aba768b06</span>, read live from its ERC-20 contract. <a id="tammExplorer" href="https://sepolia-explorer.giwa.io/address/0x10b3cc2fc981277ada576891cf649d0aba768b06" target="_blank" rel="noopener">View on GIWA Explorer</a></p>
+        <div class="stat-grid">
+          <div class="stat"><p class="k">Name</p><p class="v" id="tammName">…</p></div>
+          <div class="stat"><p class="k">Symbol</p><p class="v" id="tammSymbol">…</p></div>
+          <div class="stat"><p class="k">Decimals</p><p class="v" id="tammDecimals">…</p></div>
+          <div class="stat"><p class="k">Total supply</p><p class="v mono" id="tammSupply">…</p></div>
+          <div class="stat"><p class="k">Your $tAMM balance</p><p class="v mono" id="tammBalance">Connect wallet</p></div>
+        </div>
+        <p class="status-line" id="tammStatus"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="cfgH">
+        <div class="sec-head"><h2 id="cfgH"><span class="n">01</span>Launch Configs</h2><button class="btn btn-small" id="btnCfgRefresh" type="button">Reload configs</button></div>
+        <p class="sec-desc">First 10 configs from the Config Registry, read at the finalized head with the same registry calls the SDK's <span class="mono">getAmmoraV4NextConfigId</span> and <span class="mono">getAmmoraV4ConfigAtBlock</span> make. Select a config to see its full on-chain details and use it in the create form.</p>
+        <p class="status-line" id="cfgStatus">Reading configs…</p>
+        <div id="cfgList"></div>
+        <div class="detail-box" id="cfgDetail" hidden></div>
+      </section>
+
+      <section class="panel" aria-labelledby="launchH">
+        <div class="sec-head"><h2 id="launchH"><span class="n">02</span>Launches</h2><button class="btn btn-small" id="btnScan" type="button">Rescan launches</button></div>
+        <p class="sec-desc">Tokens created on the Launch Factory, found by scanning <span class="mono">LaunchCreated</span> events from deployment block <span class="mono">36,220,000</span> to the current head. The GIWA RPC caps log queries at 10,000 blocks per call, so the scan runs in chunks and reports its progress. Each result is cross-checked against the factory's <span class="mono">tokenForCurve</span> and <span class="mono">curveForToken</span> getters.</p>
+        <p class="status-line" id="launchStatus">Scan has not run yet.</p>
+        <div class="progress-track" id="launchProgressTrack" hidden><div class="progress-fill" id="launchProgressFill"></div></div>
+        <div id="launchList"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="createH">
+        <div class="sec-head"><h2 id="createH"><span class="n">03</span>Create a launch</h2></div>
+        <p class="sec-desc">Builds the exact factory transaction with the SDK's <span class="mono">buildCreateAmmoraV4Launch</span>. Nothing is sent until you review the preview and press Confirm.</p>
+        <div class="note-box" id="createWalletNote">Connect your wallet (top right) to create a launch. The preview works without a wallet; sending does not.</div>
+        <form id="createForm" autocomplete="off">
+          <div class="form-grid">
+            <div class="field"><label for="crName">Token name</label><input id="crName" type="text" maxlength="64" placeholder="e.g. Rune Stone" /></div>
+            <div class="field"><label for="crSymbol">Token symbol</label><input id="crSymbol" type="text" maxlength="16" placeholder="e.g. RUNE" /></div>
+            <div class="field full"><label for="crMeta">Metadata URI</label><input id="crMeta" type="text" placeholder="ipfs://… or https://…" /><span class="hint">Stored on-chain with the launch. Use a URI you control.</span></div>
+            <div class="field full"><label for="crCreatorMeta">Creator metadata URI (optional)</label><input id="crCreatorMeta" type="text" placeholder="Leave empty if none" /></div>
+            <div class="field"><label for="crConfigId">Config ID</label><input id="crConfigId" type="number" min="1" step="1" value="6" /><span class="hint">The config is re-read live at preview time; its fee and decimals rule the launch.</span></div>
+            <div class="field"><label for="crDecimals">Token decimals (6–9)</label><input id="crDecimals" type="number" min="6" max="9" step="1" value="9" /><span class="hint">Must match the chosen config's token decimals exactly.</span></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-teal" id="btnCreatePreview" type="submit">Build preview</button>
+            <span class="status-line" id="createStatus"></span>
+          </div>
+        </form>
+        <div class="preview-box" id="createPreview" hidden></div>
+        <div class="form-actions" id="createConfirmRow" hidden>
+          <button class="btn btn-gold" id="btnCreateConfirm" type="button">Confirm and create launch</button>
+          <span class="status-line" id="createSendStatus"></span>
+        </div>
+        <div class="result-box" id="createResult" hidden></div>
+      </section>
+
+      <section class="panel" aria-labelledby="tradeH">
+        <div class="sec-head"><h2 id="tradeH"><span class="n">04</span>Trade on a launch curve</h2></div>
+        <p class="sec-desc">Quotes come from <span class="mono">AmmoraV4LaunchCurveClient.getStateAtBlock</span> and <span class="mono">quoteExactInputAtBlock</span> at the finalized head (12 confirmations), classified with <span class="mono">classifyAmmoraV4ExactInputFill</span>. The swap transaction is planned by the SDK and shown in full before you confirm. Buys pay the curve's quote token (WETH on these configs), so your wallet needs WETH, not just ETH; the SDK's approval requirement is handled as a separate approval transaction first when needed.</p>
+        <div class="form-grid">
+          <div class="field"><label for="trCurveSelect">Launch (from scan)</label><select id="trCurveSelect"><option value="">Scan launches first, or paste a curve address</option></select></div>
+          <div class="field"><label for="trCurve">Curve address</label><input id="trCurve" type="text" class="mono" placeholder="0x…" spellcheck="false" /></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-small" id="btnLoadCurve" type="button">Load curve state</button>
+          <span class="status-line" id="tradeStateStatus"></span>
+        </div>
+        <div class="detail-box" id="trState" hidden></div>
+        <div class="form-grid" style="margin-top:16px">
+          <div class="field"><label>Direction</label>
+            <div class="seg-toggle" role="group" aria-label="Trade direction">
+              <button type="button" id="trDirBuy" class="active">Buy</button>
+              <button type="button" id="trDirSell">Sell</button>
+            </div>
+            <span class="hint" id="trDirHint">Pay quote token, receive the launch token.</span>
+          </div>
+          <div class="field"><label for="trAmount">Amount in</label><input id="trAmount" type="text" inputmode="decimal" placeholder="0.001" /><span class="hint" id="trAmountHint">In the token you pay.</span></div>
+          <div class="field"><label for="trSlippage">Slippage (bps)</label><input id="trSlippage" type="number" min="1" max="5000" step="1" value="50" /><span class="hint">50 bps = 0.5%. Sets the minimum output.</span></div>
+          <div class="field"><label>Your balances (live)</label><p class="small" id="trBalances">Load a curve to see balances.</p></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-teal" id="btnTradePreview" type="button">Preview quote</button>
+          <span class="status-line" id="tradeStatus"></span>
+        </div>
+        <div class="preview-box" id="tradePreview" hidden></div>
+        <div class="form-actions" id="tradeConfirmRow" hidden>
+          <button class="btn btn-gold" id="btnTradeConfirm" type="button">Confirm and swap</button>
+          <span class="status-line" id="tradeSendStatus"></span>
+        </div>
+        <div class="result-box" id="tradeResult" hidden></div>
+      </section>
+
+      <footer>
+        NyxRune Launchpad runs entirely in your browser. Before a wallet connects, figures are read over the public GIWA Sepolia RPC; after you connect a wallet on GIWA Sepolia, the same reads run through that wallet's own provider (the RPC chip at the top shows which route is serving). Every figure is a live on-chain read, using the same registry, factory and ERC-20 calls as the Ammora SDK; a failed read shows its error instead of a placeholder. GIWA Sepolia is a testnet (chain ID 91342): tokens and balances here have no monetary value. Transactions are signed only by your own wallet, only after you confirm the exact preview in this page.
+      </footer>
+    </div>
+
+    <!-- Wallet picker modal (Ammora-style: choose your extension, network adapts to GIWA Sepolia) -->
+    <div class="modal-overlay" id="walletModal" hidden role="dialog" aria-modal="true" aria-labelledby="walletModalTitle">
+      <div class="modal">
+        <div class="modal-head">
+          <div>
+            <h2 id="walletModalTitle">Connect a wallet</h2>
+            <p>Choose a wallet extension installed in this browser. If you have several, pick the one you want, no auto-connect to OKX or the default provider.</p>
+          </div>
+          <button class="modal-close" id="btnWalletClose" type="button" aria-label="Close wallet picker">&times;</button>
+        </div>
+        <div class="modal-net" aria-label="Required network">
+          <div class="row">
+            <span>Required network <strong>GIWA Sepolia</strong> <span class="mono small">Chain ID 91342 · 0x164ce</span></span>
+            <span class="net-pill" id="modalNetPill"><span class="dot"></span><b id="modalNetName">Checking…</b></span>
+          </div>
+          <p id="modalNetDesc">After you pick a wallet, this page checks its current chain. If it is not on GIWA Sepolia, you will be asked in the wallet to switch, or to add GIWA Sepolia if it is not there yet (RPC https://sepolia-rpc.giwa.io).</p>
+          <div class="row" style="margin-top:10px">
+            <button class="btn btn-small" id="btnModalSwitch" type="button" hidden>Switch / Add GIWA Sepolia</button>
+            <button class="btn btn-small btn-ghost" id="btnRescanWallets" type="button">Rescan extensions</button>
+          </div>
+        </div>
+        <div class="wallet-grid" id="walletGrid"></div>
+        <p class="wallet-status status-line" id="walletModalStatus"></p>
+        <p class="wallet-note">Detection uses EIP-6963 wallet discovery plus the classic injected providers, so wallets that announce themselves (MetaMask, OKX, Coinbase Wallet, Rabby, Brave Wallet, Trust Wallet, Phantom and others) appear by name instead of fighting over <span class="mono">window.ethereum</span>. Wallets not detected are shown as Not installed with their official download link. Only the wallet you tap will be asked to connect.</p>
+      </div>
+    </div>
+
+    <script>
+    "use strict";
+    /* NyxRune Launchpad: classic script shell.
+       READ PATH: every live read (chain head, launch configs, launch scan,
+       $tAMM, balances) runs on the dependency-free JSON-RPC layer further
+       down. It does NOT wait for the Ammora SDK / viem modules.
+       WHY THE PREVIOUS RAW-RPC BUILD STILL FAILED IN A REAL BROWSER: it
+       fired roughly 600 individual POSTs at the single public GIWA RPC on
+       load (529 launch-scan chunks in parallel, ~80 config calls, status
+       polls). GIWA's own documentation describes that endpoint as shared
+       and rate limited for bursts, "fine for a wallet, not for an app",
+       and other GIWA builders document the same advice: batch reads
+       instead of firing them in parallel, or use a gateway endpoint. In
+       the user's Chrome the burst was refused at connection level, so
+       even the single eth_blockNumber behind "Latest block" died with
+       "Failed to fetch" while the page sat on "RPC error" / "V4 core
+       checking"; the audit sandbox, whose traffic leaves through a
+       shared proxy pool, never tripped the limit, which is why the fix
+       looked done there. This build therefore (1) batches reads into a
+       handful of JSON-RPC batch POSTs, (2) paces the launch scan, and
+       (3) fails over automatically across all three public GIWA Sepolia
+       endpoints (official RPC, official Flashblocks RPC, Pocket Network
+       gateway), sticking to whichever endpoint last answered. The raw
+       layer performs the exact same registry, factory and ERC-20 calls
+       the SDK's read helpers make (selectors and field layout from the
+       SDK 0.3.9 ABIs, verified field-by-field against the SDK on-chain;
+       batch responses from both GIWA endpoints verified identical to
+       single-call responses at the same block).
+       WRITE PATH: the Ammora SDK and viem are still loaded, in the
+       background, with dynamic import() from single-file bundles with CDN
+       fallbacks; they are used only for what needs them (building create /
+       trade transactions, planning swaps, parsing receipts). No keys, no
+       backend, no mocks.
+       WALLET-ROUTED READS (this build): in the user's real browser the
+       burst fix was not enough, the shared page could not reach the
+       public RPC at all from that environment, while the OKX extension
+       in the same browser read the chain normally (extensions talk to
+       the chain from their own context). So once any wallet is
+       connected and on GIWA Sepolia, rpc() / rpcBatch() send every read
+       through that wallet's EIP-1193 provider.request instead of fetch,
+       and the SDK's viem publicClient is swapped to a custom transport
+       over the same provider. Before a wallet connects (or on a wrong
+       chain) the batched public-RPC path above still serves reads. */
+    var MODULE_SOURCES = [
+      { /* jsDelivr single-file bundles; the SDK bundle imports this exact
+           viem URL, so page and SDK share one viem instance. */
+        sdk: "https://cdn.jsdelivr.net/npm/@ammora-protocol/sdk@0.3.9/+esm",
+        viem: "https://cdn.jsdelivr.net/npm/viem@2.57.16/+esm" },
+      { /* esm.sh fully bundled single files. */
+        sdk: "https://esm.sh/@ammora-protocol/sdk@0.3.9?bundle&target=es2022",
+        viem: "https://esm.sh/viem@2.57.20?bundle&target=es2022" },
+      { /* Original esm.sh module graph, last resort. */
+        sdk: "https://esm.sh/@ammora-protocol/sdk@0.3.9",
+        viem: "https://esm.sh/viem@2.57.20?target=es2022" }
+    ];
+    var RPC_URL = "https://sepolia-rpc.giwa.io";
+    /* Every public JSON-RPC endpoint for GIWA Sepolia (chain 91342). The
+       read layer fails over across them in this order and sticks to the
+       one that last answered; RPC_URL stays the canonical endpoint named
+       to wallets when they add the network. */
+    var RPC_ENDPOINTS = [
+      "https://sepolia-rpc.giwa.io",
+      "https://sepolia-rpc-flashblocks.giwa.io",
+      "https://giwa-sepolia-testnet.api.pocket.network"
+    ];
+    var EXPLORER = "https://sepolia-explorer.giwa.io";
+    var CHAIN_ID = 91342;
+    var TAMM_ADDRESS = "0x10b3cc2fc981277ada576891cf649d0aba768b06";
+    var ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+    var sdk = null, viem = null, sdkLoadError = null;
+    var publicClient = null, walletClient = null, account = null;
+    var CHAIN_ID_HEX = "0x164ce"; /* 91342 */
+    var selectedProvider = null; /* EIP-1193 provider the user actually picked */
+    var selectedWalletName = null;
+    var selectedWalletRdns = null;
+    var walletChainId = null; /* number or null, chain the picked wallet is on */
+    var discovered = []; /* [{info:{uuid,name,icon,rdns}, provider}] from EIP-6963 */
+    var providerListenersAttached = new WeakSet();
+    var KNOWN_WALLETS = [
+      { name: "MetaMask", rdns: "io.metamask", initials: "M", installUrl: "https://metamask.io/download/", match: function (p, info) { return (info && /metamask/i.test(info.name || "")) || !!(p && p.isMetaMask && !p.isOkxWallet && !p.isRabby); } },
+      { name: "OKX Wallet", rdns: "com.okx.wallet", initials: "OK", installUrl: "https://www.okx.com/download", match: function (p, info) { return (info && /okx/i.test(info.name || "")) || !!(p && (p.isOkxWallet || p.isOKExWallet)); } },
+      { name: "Coinbase Wallet", rdns: "com.coinbase.wallet", initials: "C", installUrl: "https://www.coinbase.com/wallet/downloads", match: function (p, info) { return (info && /coinbase/i.test(info.name || "")) || !!(p && p.isCoinbaseWallet); } },
+      { name: "Rabby Wallet", rdns: "io.rabby", initials: "R", installUrl: "https://rabby.io/", match: function (p, info) { return (info && /rabby/i.test(info.name || "")) || !!(p && p.isRabby); } },
+      { name: "Brave Wallet", rdns: "com.brave.wallet", initials: "B", installUrl: "https://brave.com/wallet/", match: function (p, info) { return (info && /brave/i.test(info.name || "")) || !!(p && p.isBraveWallet); } },
+      { name: "Trust Wallet", rdns: "com.trustwallet.app", initials: "T", installUrl: "https://trustwallet.com/browser-extension", match: function (p, info) { return (info && /trust/i.test(info.name || "")) || !!(p && p.isTrust); } },
+      { name: "Phantom", rdns: "app.phantom", initials: "P", installUrl: "https://phantom.com/download", match: function (p, info) { return (info && /phantom/i.test(info.name || "")) || !!(p && p.isPhantom); } },
+      { name: "Backpack", rdns: "app.backpack", initials: "Bp", installUrl: "https://backpack.app/download", match: function (p, info) { return (info && /backpack/i.test(info.name || "")); } }
+    ];
+    var DEP = null; /* SDK deployment object, set when the SDK finishes loading */
+    /* Deployment constants copied from the SDK 0.3.9
+       giwaSepoliaAutoRouteDeployment, so the read layer can start before
+       (and without) the SDK. When the SDK loads, boot cross-checks these
+       against the SDK's own object and adopts the SDK values if they ever
+       differ. */
+    var DEPLOYMENT_039 = {
+      slot: "v4-auto-route-20260917",
+      configRegistry: "0x6d043014972b87406C4757a5f2d655A24e0b0aF9",
+      factory: "0x35353a2Dab7426EcCAe6f5FB267702a542ab68fA",
+      feePolicy: "0x17B44C14F640fD429740FA3220f47a567c62725C",
+      graduationAdapter: "0xF1A0f23036Aae88EEcecd1D9205Dd78c388fe263",
+      wrappedNative: "0x4200000000000000000000000000000000000006",
+      startBlock: 36220000n
+    };
+    var REGISTRY = DEPLOYMENT_039.configRegistry, FACTORY = DEPLOYMENT_039.factory, FEE_POLICY = DEPLOYMENT_039.feePolicy, ADAPTER = DEPLOYMENT_039.graduationAdapter, WETH = DEPLOYMENT_039.wrappedNative, START_BLOCK = DEPLOYMENT_039.startBlock;
+    var LAUNCH_EVENT = null;
+    var configsById = {}; /* string id -> snapshot */
+    var selectedConfigId = null;
+    var launches = []; /* decoded LaunchCreated logs, sorted desc */
+    var scanning = false;
+    var tamm = { decimals: 6, symbol: "tAMM" };
+    var erc20Cache = {}; /* address -> {name,symbol,decimals} */
+
+    function $(id) { return document.getElementById(id); }
+    function errMsg(e) {
+      if (!e) return "Unknown error";
+      return (e.shortMessage || e.message || String(e)).toString();
+    }
+    function setStatus(id, text, kind) {
+      var el = $(id); if (!el) return;
+      el.textContent = text || "";
+      el.className = "status-line" + (kind === "err" ? " err" : "");
+    }
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text !== undefined && text !== null) n.textContent = String(text);
+      return n;
+    }
+    function link(href, text) {
+      var a = el("a", null, text); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a;
+    }
+    function addrLink(address, text) { return link(EXPLORER + "/address/" + address, text || address); }
+    function txLink(hash, text) { return link(EXPLORER + "/tx/" + hash, text || hash); }
+    function shortAddr(a) {
+      if (!a || a.length < 12) return a || "";
+      return a.slice(0, 6) + "…" + a.slice(-4);
+    }
+    /* Local equivalents of viem's formatUnits / formatEther, so formatting
+       works before (and without) the viem module. */
+    function fmtUnits(v, d) {
+      var neg = v < 0n;
+      var s = (neg ? -v : v).toString();
+      if (!d) return (neg ? "-" : "") + s;
+      while (s.length <= d) s = "0" + s;
+      var intPart = s.slice(0, s.length - d);
+      var fracPart = s.slice(s.length - d).replace(/0+$/, "");
+      return (neg ? "-" : "") + intPart + (fracPart ? "." + fracPart : "");
+    }
+    function fmtEth(v) { return fmtUnits(v, 18) + " ETH"; }
+    function kvRow(dl, key, valueNodeOrText, plain) {
+      var dt = el("dt", null, key);
+      var dd = el("dd", plain ? "plain" : null);
+      if (typeof valueNodeOrText === "string" || typeof valueNodeOrText === "number") dd.textContent = String(valueNodeOrText);
+      else if (valueNodeOrText) dd.appendChild(valueNodeOrText);
+      dl.appendChild(dt); dl.appendChild(dd);
+    }
+    function addrCell(address) {
+      var span = el("span");
+      span.appendChild(addrLink(address, address));
+      return span;
+    }
+    function boolText(b) { return b ? "Yes" : "No"; }
+    function migModeLabel(m) {
+      if (m === 0) return "0 · Concentrated graduation";
+      if (m === 1) return "1 · Compounding";
+      return String(m);
+    }
+    function schedulerLabel(m) {
+      return ({ 0: "0 · Static", 1: "1 · Linear", 2: "2 · Exponential" })[m] || String(m);
+    }
+    function isAddress(s) { return /^0x[0-9a-fA-F]{40}$/.test((s || "").trim()); }
+
+    async function erc20Info(address) {
+      var key = address.toLowerCase();
+      if (erc20Cache[key]) return erc20Cache[key];
+      var info;
+      if (publicClient && viem) {
+        var abi = viem.erc20Abi;
+        var results = await Promise.all([
+          publicClient.readContract({ address: address, abi: abi, functionName: "name" }).catch(function () { return ""; }),
+          publicClient.readContract({ address: address, abi: abi, functionName: "symbol" }).catch(function () { return ""; }),
+          publicClient.readContract({ address: address, abi: abi, functionName: "decimals" }).catch(function () { return 18; })
+        ]);
+        info = { name: results[0], symbol: results[1] || shortAddr(address), decimals: Number(results[2]) };
+      } else {
+        var rawItems = await rpcBatch([
+          { method: "eth_call", params: [{ to: address, data: SEL.erc20Name }, "latest"] },
+          { method: "eth_call", params: [{ to: address, data: SEL.erc20Symbol }, "latest"] },
+          { method: "eth_call", params: [{ to: address, data: SEL.erc20Decimals }, "latest"] }
+        ]).catch(function () { return null; });
+        function rawStr(i) { try { return decodeAbiString(batchItem(rawItems[i])); } catch (e) { return ""; } }
+        function rawDec() { try { return wNum(hexWords(batchItem(rawItems[2]))[0]); } catch (e) { return 18; } }
+        info = rawItems
+          ? { name: rawStr(0), symbol: rawStr(1) || shortAddr(address), decimals: Number(rawDec()) }
+          : { name: "", symbol: shortAddr(address), decimals: 18 };
+      }
+      erc20Cache[key] = info;
+      return info;
+    }
+    async function erc20Balance(token, owner) {
+      if (publicClient && viem) {
+        return publicClient.readContract({ address: token, abi: viem.erc20Abi, functionName: "balanceOf", args: [owner] });
+      }
+      var h = await ethCall(token, SEL.erc20BalanceOf + encAddr(owner), "latest");
+      return wUint(hexWords(h)[0]);
+    }
+    async function finalizedHead() {
+      /* Same rule as the SDK's resolveAmmoraFinalizedHead with the
+         confirmations strategy: latest minus 12, floored at 0. Computed on
+         the raw layer so it never depends on the SDK having loaded. */
+      return rawFinalizedHead();
+    }
+
+    /* ---------------- dependency-free JSON-RPC read layer ----------------
+       Batched fetch POSTs to the public GIWA Sepolia endpoints with
+       automatic failover (see rpcSend). Selectors and the LaunchCreated topic
+       are the keccak selectors of the SDK 0.3.9 registry / factory / ERC-20
+       ABIs; the config decoder follows the registry's get() tuple layout
+       field-by-field and was verified identical to the SDK's
+       getAmmoraV4ConfigAtBlock output on-chain. */
+    var SEL = {
+      nextConfigId: "0x99d726c7", get: "0x9507d39a", getCurve: "0x5c9b035d",
+      configHash: "0x4f1def99", getIdentity: "0x85e3f058", enabled: "0x76e5c0de",
+      feePolicy: "0x82589038", feePolicyVersion: "0xab738023",
+      configRegistry: "0x244bb309", graduationAdapter: "0xb668410f", launchFactory: "0x536dac9b",
+      tokenForCurve: "0x4c1c1c6e", curveForToken: "0x8580756c",
+      erc20Name: "0x06fdde03", erc20Symbol: "0x95d89b41", erc20Decimals: "0x313ce567",
+      erc20TotalSupply: "0x18160ddd", erc20BalanceOf: "0x70a08231"
+    };
+    var LAUNCH_CREATED_TOPIC = "0x0d8c51804d67b6aa256e855176d3b6f5d0cc3657138b63947cc9eb5a1908d00a";
+    var FEE_POLICY_VERSION_039 = "0xf879bf5d918947898f981f11a71ddee2587454faa24b66b84244d6c8edd9d799";
+    var rpcSeq = 0;
+    var rpcActive = 0; /* index into RPC_ENDPOINTS of the endpoint that last answered */
+
+    function sleepMs(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    function rpcHost(url) { return url.replace(/^https?:\/\//, "").replace(/\/.*$/, ""); }
+    function noteRpcOk(url) {
+      var chip = $("rpcVal");
+      if (chip) { chip.textContent = rpcHost(url); chip.title = "Live reads are served by " + url; }
+    }
+    function noteRpcDown(detail) {
+      var chip = $("rpcVal");
+      if (chip) { chip.textContent = "unreachable"; chip.title = detail || ""; }
+    }
+    /* ---- wallet-routed reads ----
+       In the user's real browser the shared page could not reach the
+       public GIWA RPC at all (every fetch died, even a single
+       eth_blockNumber), while the OKX extension itself read the chain
+       normally, because an extension talks to the chain from its own
+       context, not from this page's origin. So once a wallet is
+       connected AND on GIWA Sepolia, every read is sent through that
+       wallet's EIP-1193 provider (provider.request) instead of fetch.
+       Before a wallet connects, or while it sits on another chain, the
+       batched public-RPC path below is used unchanged. */
+    function walletReadProvider() {
+      if (!selectedProvider || !account) return null;
+      if (walletChainId !== CHAIN_ID) return null;
+      if (typeof selectedProvider.request !== "function") return null;
+      return selectedProvider;
+    }
+    function noteRpcWallet() {
+      var chip = $("rpcVal");
+      if (chip) {
+        var label = selectedWalletName || "wallet";
+        chip.textContent = "via " + label;
+        chip.title = "Live reads are served through your connected wallet (" + label + ") on GIWA Sepolia, not the public RPC.";
+      }
+    }
+    async function walletRequest(method, params) {
+      var p = walletReadProvider();
+      if (!p) throw new Error("No connected wallet on GIWA Sepolia to read through");
+      var result = await p.request({ method: method, params: params });
+      noteRpcWallet();
+      return result;
+    }
+    /* The Ammora SDK reads through viem's publicClient, which normally
+       uses HTTP transports to the same public RPC this page cannot
+       reach in the user's browser. When a wallet is connected on GIWA,
+       swap that client to a viem custom transport over the wallet
+       provider, so SDK reads (config snapshots, curve state, quotes,
+       receipts) take the wallet route too. */
+    function buildHttpPublicClient() {
+      var rpcTransports = RPC_ENDPOINTS.map(function (u) {
+        return viem.http(u, { retryCount: 1, retryDelay: 600, timeout: 20000, fetchFn: resilientFetch });
+      });
+      return viem.createPublicClient({
+        chain: window.__giwaChain,
+        transport: (typeof viem.fallback === "function")
+          ? viem.fallback(rpcTransports, { retryCount: 1 })
+          : rpcTransports[0]
+      });
+    }
+    function activateWalletReadClient() {
+      if (!viem || !window.__giwaChain || !walletReadProvider()) return false;
+      try {
+        publicClient = viem.createPublicClient({ chain: window.__giwaChain, transport: viem.custom(selectedProvider) });
+        noteRpcWallet();
+        return true;
+      } catch (e) { return false; }
+    }
+    function restoreHttpPublicClient() {
+      if (!viem || !window.__giwaChain) return;
+      try { publicClient = buildHttpPublicClient(); } catch (e) { /* keep existing client */ }
+    }
+    /* Re-run the page's main reads over whichever route is now active.
+       Called right after a wallet connects (or switches to GIWA), so a
+       page that opened with every read failing recovers in place,
+       without a reload. */
+    function refreshReadsAfterRouteChange() {
+      refreshChainStatus();
+      loadTamm();
+      loadConfigs();
+      if (!scanning && !launches.length) setTimeout(scanLaunches, 600);
+      if (curveState) loadCurveState();
+    }
+    /* One POST of a JSON-RPC payload (a single request object, or an
+       array for a batch) to one endpoint. Resolves with the parsed body;
+       throws on network failure, timeout, non-2xx or unparseable body. */
+    async function rpcPost(url, payload) {
+      var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 15000) : null;
+      try {
+        var res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          cache: "no-store",
+          credentials: "omit",
+          signal: ctrl ? ctrl.signal : undefined
+        });
+        if (!res.ok) {
+          var httpErr = new Error("HTTP " + res.status + (res.statusText ? " " + res.statusText : ""));
+          httpErr.httpStatus = res.status;
+          throw httpErr;
+        }
+        return await res.json();
+      } finally { if (timer) clearTimeout(timer); }
+    }
+    /* Send a payload with endpoint failover: start at the endpoint that
+       last answered, walk the list once, and if every endpoint failed,
+       pause and walk it once more. A 429 (the documented public-RPC rate
+       limit) moves straight on to the next endpoint after a short pause
+       instead of retrying the limited one. The thrown error names every
+       endpoint and its failure, so a dead read path is diagnosable from
+       the page itself. */
+    async function rpcSend(payload) {
+      var errors = [];
+      for (var round = 0; round < 2; round++) {
+        for (var step = 0; step < RPC_ENDPOINTS.length; step++) {
+          var idx = (rpcActive + step) % RPC_ENDPOINTS.length;
+          var url = RPC_ENDPOINTS[idx];
+          try {
+            var body = await rpcPost(url, payload);
+            rpcActive = idx;
+            noteRpcOk(url);
+            return body;
+          } catch (e) {
+            errors.push(rpcHost(url) + ": " + errMsg(e));
+            if (e && e.httpStatus === 429) await sleepMs(900);
+          }
+        }
+        if (round === 0) await sleepMs(800);
+      }
+      var err = new Error("All GIWA RPC endpoints failed (" + errors.join("; ") + ")");
+      noteRpcDown(err.message);
+      throw err;
+    }
+    async function rpc(method, params) {
+      if (walletReadProvider()) {
+        try {
+          return await walletRequest(method, params);
+        } catch (walletErr) {
+          /* A chain-level RPC error (revert, invalid params) would fail
+             identically on the public RPC, so surface the wallet error
+             directly for those; for transport-style failures, fall back
+             to the public endpoints once before giving up. */
+          var code = walletErr && walletErr.code;
+          if (typeof code === "number" && code !== 4001 && code !== -32000 && code !== -32603) throw walletErr;
+          try {
+            var jw = await rpcSend({ jsonrpc: "2.0", id: ++rpcSeq, method: method, params: params });
+            if (jw && jw.error) throw new Error("RPC error " + (jw.error.code !== undefined ? jw.error.code : "") + ": " + (jw.error.message || "unknown"));
+            if (!jw || !("result" in jw)) throw new Error("Malformed JSON-RPC response from the GIWA RPC");
+            return jw.result;
+          } catch (directErr) {
+            throw new Error("Read failed via wallet (" + errMsg(walletErr) + ") and via public RPC (" + errMsg(directErr) + ")");
+          }
+        }
+      }
+      var j = await rpcSend({ jsonrpc: "2.0", id: ++rpcSeq, method: method, params: params });
+      if (j && j.error) throw new Error("RPC error " + (j.error.code !== undefined ? j.error.code : "") + ": " + (j.error.message || "unknown"));
+      if (!j || !("result" in j)) throw new Error("Malformed JSON-RPC response from the GIWA RPC");
+      return j.result;
+    }
+    /* Batched JSON-RPC: many calls in ONE POST. Resolves with the
+       response items aligned to the request order; each item carries a
+       result or an error, and batchItem() unwraps one. A transport
+       failure throws (after failover), an individual call's RPC error
+       stays in its item so callers can tolerate it per call. */
+    async function rpcBatch(calls) {
+      var p = walletReadProvider();
+      if (p) {
+        /* EIP-1193 providers have no batch verb, so a batch becomes
+           individual provider.request calls, run 6 at a time so the
+           extension is never hit with the full burst at once. Each
+           result keeps the same {result} / {error} item shape the
+           direct batch path returns, so every caller works unchanged. */
+        var items = new Array(calls.length);
+        var nextIdx = 0;
+        async function batchWorker() {
+          while (nextIdx < calls.length) {
+            var i = nextIdx++;
+            try {
+              var r = await p.request({ method: calls[i].method, params: calls[i].params });
+              items[i] = { result: r };
+            } catch (e) {
+              items[i] = { error: { code: (e && typeof e.code === "number") ? e.code : -32000, message: errMsg(e) } };
+            }
+          }
+        }
+        var workers = [];
+        for (var w = 0; w < Math.min(6, calls.length); w++) workers.push(batchWorker());
+        await Promise.all(workers);
+        var allFailed = items.length > 0 && items.every(function (it) { return it && it.error; });
+        if (!allFailed) { noteRpcWallet(); return items; }
+        /* Every wallet call failed: try the public batch once as a
+           fallback; if that also fails, return the wallet items so the
+           caller sees the wallet errors. */
+        try {
+          var payloadFb = calls.map(function (c) { return { jsonrpc: "2.0", id: ++rpcSeq, method: c.method, params: c.params }; });
+          var bodyFb = await rpcSend(payloadFb);
+          if (!Array.isArray(bodyFb)) throw new Error("Malformed JSON-RPC batch response from the GIWA RPC");
+          var byIdFb = {};
+          bodyFb.forEach(function (item) { if (item && item.id !== undefined && item.id !== null) byIdFb[item.id] = item; });
+          return payloadFb.map(function (pp) { return byIdFb[pp.id] || { error: { code: -32000, message: "Missing response in batch" } }; });
+        } catch (eFb) { return items; }
+      }
+      var payload = calls.map(function (c) { return { jsonrpc: "2.0", id: ++rpcSeq, method: c.method, params: c.params }; });
+      var body = await rpcSend(payload);
+      if (!Array.isArray(body)) throw new Error("Malformed JSON-RPC batch response from the GIWA RPC");
+      var byId = {};
+      body.forEach(function (item) { if (item && item.id !== undefined && item.id !== null) byId[item.id] = item; });
+      return payload.map(function (p2) { return byId[p2.id] || { error: { code: -32000, message: "Missing response in batch" } }; });
+    }
+    function batchItem(item) {
+      if (item && item.error) throw new Error("RPC error " + (item.error.code !== undefined ? item.error.code : "") + ": " + (item.error.message || "unknown"));
+      if (!item || !("result" in item)) throw new Error("Malformed JSON-RPC response from the GIWA RPC");
+      return item.result;
+    }
+    /* Fetch used by viem's HTTP transports once the SDK is loaded: one
+       retry, so SDK reads inherit a little resilience without
+       multiplying request volume against the rate-limited endpoints. */
+    async function resilientFetch(url, init) {
+      var lastErr = null;
+      for (var i = 0; i < 2; i++) {
+        try {
+          var res = await fetch(url, init);
+          if (res.status >= 500 && i < 1) { await sleepMs(600); continue; }
+          return res;
+        } catch (e) { lastErr = e; if (i < 1) await sleepMs(600); }
+      }
+      throw lastErr || new Error("fetch failed");
+    }
+    function blockTagOf(n) { return n === "latest" ? "latest" : "0x" + n.toString(16); }
+    async function ethCall(to, data, block) {
+      var out = await rpc("eth_call", [{ to: to, data: data }, blockTagOf(block)]);
+      if (!out || out === "0x") throw new Error("Empty eth_call result from " + shortAddr(to));
+      return out;
+    }
+    /* Many eth_calls in as few POSTs as possible (25 per batch). Throws
+       on the first call that errors or returns empty, like ethCall. */
+    async function ethCallMany(list) {
+      var out = [];
+      for (var i = 0; i < list.length; i += 25) {
+        var slice = list.slice(i, i + 25);
+        var items = await rpcBatch(slice.map(function (c) {
+          return { method: "eth_call", params: [{ to: c.to, data: c.data }, blockTagOf(c.block)] };
+        }));
+        items.forEach(function (item, k) {
+          var r = batchItem(item);
+          if (!r || r === "0x") throw new Error("Empty eth_call result from " + shortAddr(slice[k].to));
+          out.push(r);
+        });
+      }
+      return out;
+    }
+    async function rawBlockNumber() { return BigInt(await rpc("eth_blockNumber", [])); }
+    async function rawFinalizedHead() {
+      var latest = await rawBlockNumber();
+      return latest > 12n ? latest - 12n : 0n;
+    }
+    async function rawGetBalance(address) { return BigInt(await rpc("eth_getBalance", [address, "latest"])); }
+
+    /* --- minimal ABI codec: values are 32-byte words --- */
+    function hexWords(hex) {
+      var b = hex.indexOf("0x") === 0 ? hex.slice(2) : hex;
+      var out = [];
+      for (var i = 0; i + 64 <= b.length; i += 64) out.push(b.slice(i, i + 64));
+      return out;
+    }
+    function wUint(w) { return BigInt("0x" + w); }
+    function wNum(w) { return Number(wUint(w)); }
+    function wAddr(w) { return "0x" + w.slice(24).toLowerCase(); }
+    function wBool(w) { return wUint(w) !== 0n; }
+    function wBytes32(w) { return "0x" + w.toLowerCase(); }
+    function encUint(v) { return v.toString(16).padStart(64, "0"); }
+    function encAddr(a) { return a.toLowerCase().replace(/^0x/, "").padStart(64, "0"); }
+    function decodeAbiString(hex) {
+      var ws = hexWords(hex);
+      if (!ws.length) return "";
+      var off = wNum(ws[0]) / 32;
+      var len = wNum(ws[off]);
+      var data = ws.slice(off + 1).join("");
+      var bytes = [];
+      for (var i = 0; i < len; i++) bytes.push(parseInt(data.slice(i * 2, i * 2 + 2), 16));
+      return new TextDecoder("utf-8").decode(new Uint8Array(bytes));
+    }
+    function topicAddr(topic) { return "0x" + topic.slice(26).toLowerCase(); }
+
+    /* Config tuple layout from the SDK 0.3.9 registry ABI, in wire order.
+       Kinds: A = address, B = BigInt (uint64 and up), N = Number (up to
+       uint40), O = bool. Nested tuples are flattened with a prefix and
+       reassembled by decodeConfigTuple. */
+    var VEST_FIELDS = [["allocationBps", "N"], ["bpsPerPeriod", "N"], ["numberOfPeriods", "N"], ["periodFrequency", "N"], ["cliffDuration", "N"]];
+    var CONFIG_FIELDS = [
+      ["quoteToken", "A"], ["partnerRecipient", "A"], ["poolCreationFee", "B"], ["totalSupply", "B"], ["tokenDecimals", "N"],
+      ["startSqrtPrice", "B"], ["cliffFeeBps", "N"], ["creatorShareOfNonProtocolBps", "N"], ["feeNumberOfPeriods", "N"],
+      ["feePeriodFrequency", "N"], ["feeReductionFactorBps", "N"], ["feeSchedulerMode", "N"], ["rateLimiterEnabled", "O"],
+      ["rateLimiterFeeIncrementBps", "N"], ["rateLimiterDuration", "N"], ["rateLimiterReferenceAmount", "B"],
+      ["dynamicFeeEnabled", "O"], ["maxVolatilityAccumulator", "N"], ["variableFeeControl", "N"], ["dynamicFeeBinStepBps", "N"],
+      ["dynamicFeeFilterPeriod", "N"], ["dynamicFeeDecayPeriod", "N"], ["dynamicFeeReductionFactorBps", "N"],
+      ["dynamicFeeBinStepQ64", "B"], ["collectFeeMode", "N"], ["enableFirstSwapWithMinFee", "O"],
+      ["migrationQuoteThreshold", "B"], ["migrationBaseThreshold", "B"], ["leftoverReceiver", "A"],
+      ["migrationQuoteFeeBps", "N"], ["creatorMigrationFeeShareBps", "N"], ["postMigrationFeeBps", "N"],
+      ["postMigrationCompoundingFeeBps", "N"], ["postMigrationCollectFeeMode", "N"], ["migrationMode", "N"],
+      ["postMigrationSqrtMinPrice", "B"], ["postMigrationSqrtMaxPrice", "B"], ["postMigrationLiquidity", "B"],
+      ["__ld_partner", "A"], ["__ld_partnerUnlockedBps", "N"], ["__ld_partnerPermanentLockedBps", "N"], ["__ld_creatorPermanentLockedBps", "N"]
+    ]
+      .concat(VEST_FIELDS.map(function (f) { return ["__ld_pv_" + f[0], f[1]]; }))
+      .concat(VEST_FIELDS.map(function (f) { return ["__ld_cv_" + f[0], f[1]]; }))
+      .concat([
+        ["__lbv_cliffUnlockAmount", "B"], ["__lbv_amountPerPeriod", "B"], ["__lbv_numberOfPeriods", "N"], ["__lbv_frequency", "B"], ["__lbv_cliffDuration", "B"],
+        ["postMigrationFeeNumberOfPeriods", "N"], ["postMigrationFeePeriodFrequency", "N"], ["postMigrationFeeReductionFactorBps", "N"],
+        ["postMigrationFeeSchedulerMode", "N"], ["activationDelay", "N"], ["activationType", "N"]
+      ]);
+    function decodeConfigTuple(hex) {
+      var ws = hexWords(hex);
+      if (ws.length < CONFIG_FIELDS.length) throw new Error("Config tuple too short: " + ws.length + " words, expected " + CONFIG_FIELDS.length);
+      var flat = {};
+      CONFIG_FIELDS.forEach(function (f, i) {
+        flat[f[0]] = f[1] === "A" ? wAddr(ws[i]) : f[1] === "O" ? wBool(ws[i]) : f[1] === "N" ? wNum(ws[i]) : wUint(ws[i]);
+      });
+      var c = {};
+      Object.keys(flat).forEach(function (k) { if (k.indexOf("__") !== 0) c[k] = flat[k]; });
+      function vest(p) {
+        return { allocationBps: flat[p + "allocationBps"], bpsPerPeriod: flat[p + "bpsPerPeriod"], numberOfPeriods: flat[p + "numberOfPeriods"], periodFrequency: flat[p + "periodFrequency"], cliffDuration: flat[p + "cliffDuration"] };
+      }
+      c.liquidityDistribution = {
+        partner: flat.__ld_partner, partnerUnlockedBps: flat.__ld_partnerUnlockedBps,
+        partnerPermanentLockedBps: flat.__ld_partnerPermanentLockedBps, creatorPermanentLockedBps: flat.__ld_creatorPermanentLockedBps,
+        partnerVesting: vest("__ld_pv_"), creatorVesting: vest("__ld_cv_")
+      };
+      c.lockedBaseVesting = {
+        cliffUnlockAmount: flat.__lbv_cliffUnlockAmount, amountPerPeriod: flat.__lbv_amountPerPeriod,
+        numberOfPeriods: flat.__lbv_numberOfPeriods, frequency: flat.__lbv_frequency, cliffDuration: flat.__lbv_cliffDuration
+      };
+      return c;
+    }
+    /* The same seven registry reads the SDK's getAmmoraV4ConfigAtBlock
+       makes, returned in the same snapshot shape. */
+    async function rawConfigSnapshot(id, fin) {
+      var arg = encUint(BigInt(id));
+      var vals = await ethCallMany([
+        { to: REGISTRY, data: SEL.get + arg, block: fin },
+        { to: REGISTRY, data: SEL.getCurve + arg, block: fin },
+        { to: REGISTRY, data: SEL.configHash + arg, block: fin },
+        { to: REGISTRY, data: SEL.getIdentity + arg, block: fin },
+        { to: REGISTRY, data: SEL.enabled + arg, block: fin },
+        { to: REGISTRY, data: SEL.feePolicy, block: fin },
+        { to: REGISTRY, data: SEL.feePolicyVersion, block: fin }
+      ]);
+      var feePolicyVersion = wBytes32(hexWords(vals[6])[0]);
+      if (feePolicyVersion !== FEE_POLICY_VERSION_039) throw new Error("unrecognized Ammora V4 fee policy");
+      var cw = hexWords(vals[1]);
+      var off = wNum(cw[0]) / 32;
+      var segLen = wNum(cw[off]);
+      var segments = [];
+      for (var i = 0; i < segLen; i++) {
+        var b = off + 1 + i * 3;
+        segments.push({ lowerSqrtPrice: wUint(cw[b]), upperSqrtPrice: wUint(cw[b + 1]), liquidity: wUint(cw[b + 2]) });
+      }
+      var iw = hexWords(vals[3]);
+      return {
+        configId: BigInt(id),
+        config: decodeConfigTuple(vals[0]),
+        segments: segments,
+        configHash: wBytes32(hexWords(vals[2])[0]),
+        identity: { owner: wAddr(iw[0]), feeClaimer: wAddr(iw[1]), createdAtBlock: wUint(iw[2]) },
+        enabled: wBool(hexWords(vals[4])[0]),
+        feePolicy: wAddr(hexWords(vals[5])[0]),
+        feePolicyVersion: feePolicyVersion,
+        asOfBlock: fin
+      };
+    }
+    /* The same cross-checks the SDK's verifyAmmoraV4CoreAtBlock makes:
+       registry, factory and adapter must all point at the deployment's fee
+       policy, at each other, and report the known fee policy version. */
+    async function rawVerifyCore(fin) {
+      var vals = await ethCallMany([
+        { to: REGISTRY, data: SEL.feePolicy, block: fin }, { to: REGISTRY, data: SEL.feePolicyVersion, block: fin },
+        { to: FACTORY, data: SEL.configRegistry, block: fin }, { to: FACTORY, data: SEL.graduationAdapter, block: fin },
+        { to: FACTORY, data: SEL.feePolicy, block: fin }, { to: FACTORY, data: SEL.feePolicyVersion, block: fin },
+        { to: ADAPTER, data: SEL.launchFactory, block: fin }, { to: ADAPTER, data: SEL.feePolicy, block: fin }, { to: ADAPTER, data: SEL.feePolicyVersion, block: fin }
+      ]);
+      var a = function (i) { return wAddr(hexWords(vals[i])[0]); };
+      var v = function (i) { return wBytes32(hexWords(vals[i])[0]); };
+      var bad = [];
+      if (a(0) !== FEE_POLICY.toLowerCase() || a(4) !== FEE_POLICY.toLowerCase() || a(7) !== FEE_POLICY.toLowerCase()) bad.push("fee policy pointer mismatch");
+      if (a(2) !== REGISTRY.toLowerCase()) bad.push("factory configRegistry mismatch");
+      if (a(3) !== ADAPTER.toLowerCase()) bad.push("factory graduationAdapter mismatch");
+      if (a(6) !== FACTORY.toLowerCase()) bad.push("adapter launchFactory mismatch");
+      if (v(1) !== FEE_POLICY_VERSION_039 || v(5) !== FEE_POLICY_VERSION_039 || v(8) !== FEE_POLICY_VERSION_039) bad.push("fee policy version mismatch");
+      if (bad.length) throw new Error("V4 core cross-check failed: " + bad.join("; "));
+    }
+    function decodeLaunchLog(log) {
+      var ws = hexWords(log.data);
+      var off = wNum(ws[3]) / 32;
+      var len = wNum(ws[off]);
+      var data = ws.slice(off + 1).join("");
+      var bytes = [];
+      for (var i = 0; i < len; i++) bytes.push(parseInt(data.slice(i * 2, i * 2 + 2), 16));
+      return {
+        blockNumber: BigInt(log.blockNumber),
+        transactionHash: log.transactionHash,
+        args: {
+          token: topicAddr(log.topics[1]),
+          curve: topicAddr(log.topics[2]),
+          creator: topicAddr(log.topics[3]),
+          configId: wUint(ws[0]),
+          configHash: wBytes32(ws[1]),
+          protocolVersion: wNum(ws[2]),
+          metadataURI: new TextDecoder("utf-8").decode(new Uint8Array(bytes))
+        }
+      };
+    }
+
+    /* ---------------- boot ---------------- */
+    function renderDeployment() {
+      var cells = [["depRegistry", REGISTRY], ["depFactory", FACTORY], ["depFeePolicy", FEE_POLICY], ["depAdapter", ADAPTER], ["depWeth", WETH]];
+      cells.forEach(function (pair) {
+        var cell = $(pair[0]);
+        cell.innerHTML = "";
+        cell.appendChild(addrLink(pair[1], pair[1]));
+      });
+      $("depStartBlock").textContent = START_BLOCK.toString() + " \u00b7 slot " + DEPLOYMENT_039.slot;
+      $("registryChip").textContent = shortAddr(REGISTRY);
+    }
+
+    /* Reads start immediately on the raw JSON-RPC layer; the SDK loads in
+       the background for create / trade. */
+    function boot() {
+      renderDeployment();
+      refreshChainStatus();
+      setInterval(refreshChainStatus, 15000);
+      loadTamm();
+      loadConfigs();
+      /* The launch scan is the heaviest reader on the page; the chain
+         status, $tAMM and config reads go first so they always land
+         before the scan starts drawing on the endpoints. */
+      setTimeout(scanLaunches, 1200);
+      loadSdkModules();
+    }
+
+    async function loadSdkModules() {
+      var bootBox = $("bootBox");
+      var loadErrors = [];
+      for (var si = 0; si < MODULE_SOURCES.length && !sdk; si++) {
+        try {
+          var mods = await Promise.all([import(MODULE_SOURCES[si].sdk), import(MODULE_SOURCES[si].viem)]);
+          if (!mods[0] || !mods[0].giwaSepoliaAutoRouteDeployment || !mods[1] || !mods[1].createPublicClient) {
+            throw new Error("Module loaded but expected Ammora SDK / viem exports are missing.");
+          }
+          sdk = mods[0]; viem = mods[1];
+        } catch (e) {
+          loadErrors.push(MODULE_SOURCES[si].sdk + " \u2192 " + errMsg(e));
+          sdk = null; viem = null;
+        }
+      }
+      if (!sdk) {
+        sdkLoadError = loadErrors[loadErrors.length - 1] || "Unknown module load error";
+        bootBox.innerHTML = "";
+        bootBox.hidden = false;
+        bootBox.appendChild(el("span", "warn-text", "Live reads on this page run over raw JSON-RPC and keep working without the SDK. The Ammora SDK bundle failed to load (" + sdkLoadError + "), so create and trade previews are unavailable. Reload the page to retry the SDK load."));
+        return;
+      }
+      try {
+        var chain = viem.defineChain({
+          id: CHAIN_ID, name: "GIWA Sepolia",
+          nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+          rpcUrls: { default: { http: [RPC_URL] } },
+          blockExplorers: { default: { name: "GIWA Explorer", url: EXPLORER } }
+        });
+        window.__giwaChain = chain;
+        publicClient = buildHttpPublicClient();
+        /* If a wallet already connected on GIWA before the SDK finished
+           loading, put SDK reads on the wallet route immediately. */
+        activateWalletReadClient();
+        DEP = sdk.giwaSepoliaAutoRouteDeployment;
+        /* Cross-check the read layer's deployment constants against the
+           SDK's own deployment object; adopt the SDK values if they differ. */
+        var sdkReg = DEP.contracts.launch.configRegistry, sdkFac = DEP.contracts.launch.factory,
+            sdkFee = DEP.contracts.launch.feePolicy, sdkAda = DEP.contracts.launch.graduationAdapter,
+            sdkWeth = DEP.contracts.tokens.wrappedNative;
+        if (sdkReg.toLowerCase() !== REGISTRY.toLowerCase() || sdkFac.toLowerCase() !== FACTORY.toLowerCase() ||
+            sdkFee.toLowerCase() !== FEE_POLICY.toLowerCase() || sdkAda.toLowerCase() !== ADAPTER.toLowerCase() ||
+            sdkWeth.toLowerCase() !== WETH.toLowerCase() || BigInt(DEP.startBlock) !== START_BLOCK) {
+          REGISTRY = sdkReg; FACTORY = sdkFac; FEE_POLICY = sdkFee; ADAPTER = sdkAda; WETH = sdkWeth;
+          START_BLOCK = BigInt(DEP.startBlock);
+          renderDeployment();
+          loadConfigs();
+          scanLaunches();
+        }
+        LAUNCH_EVENT = sdk.ammoraLaunchFactoryV4Abi.find(function (x) { return x.type === "event" && x.name === "LaunchCreated"; });
+        bootBox.hidden = true;
+        if (account && !walletClient) {
+          /* The wallet was connected before the SDK finished loading;
+             finish wiring it up now that viem is available. */
+          account = viem.getAddress(account);
+          walletClient = viem.createWalletClient({ account: account, chain: chain, transport: viem.custom(activeProvider()) });
+          $("createWalletNote").hidden = true;
+          updateWalletUI();
+          renderWalletInfo();
+        }
+      } catch (e) {
+        bootBox.innerHTML = "";
+        bootBox.hidden = false;
+        bootBox.appendChild(el("span", "err-text", "SDK initialisation failed: " + errMsg(e) + " Live reads keep running over raw JSON-RPC."));
+      }
+    }
+
+    async function refreshChainStatus() {
+      try {
+        var head = await rawBlockNumber();
+        $("blockVal").textContent = head.toLocaleString("en-US");
+        $("liveDot").className = "dot live";
+        var fin = head > 12n ? head - 12n : 0n;
+        $("finVal").textContent = fin.toLocaleString("en-US");
+        if (!sdkLoadError) $("bootBox").hidden = true;
+      } catch (e) {
+        $("liveDot").className = "dot err";
+        $("blockVal").textContent = "RPC error";
+        $("blockVal").title = errMsg(e);
+      }
+    }
+
+    /* ---------------- $tAMM ---------------- */
+    async function loadTamm() {
+      setStatus("tammStatus", "Reading $tAMM from chain\u2026");
+      try {
+        var vals = await ethCallMany([
+          { to: TAMM_ADDRESS, data: SEL.erc20Name, block: "latest" },
+          { to: TAMM_ADDRESS, data: SEL.erc20Symbol, block: "latest" },
+          { to: TAMM_ADDRESS, data: SEL.erc20Decimals, block: "latest" },
+          { to: TAMM_ADDRESS, data: SEL.erc20TotalSupply, block: "latest" }
+        ]);
+        var name = decodeAbiString(vals[0]);
+        var symbol = decodeAbiString(vals[1]);
+        var decimals = wNum(hexWords(vals[2])[0]);
+        var supply = wUint(hexWords(vals[3])[0]);
+        tamm = { name: name, symbol: symbol, decimals: decimals };
+        $("tammName").textContent = name;
+        $("tammSymbol").textContent = symbol;
+        $("tammDecimals").textContent = String(decimals);
+        $("tammSupply").textContent = fmtUnits(supply, decimals) + " " + symbol;
+        setStatus("tammStatus", "");
+        refreshTammBalance();
+      } catch (e) {
+        setStatus("tammStatus", "Failed to read $tAMM: " + errMsg(e), "err");
+      }
+    }
+    async function refreshTammBalance() {
+      if (!account) { $("tammBalance").textContent = "Connect wallet"; return; }
+      try {
+        var bal = await erc20Balance(TAMM_ADDRESS, account);
+        $("tammBalance").textContent = fmtUnits(bal, tamm.decimals) + " " + tamm.symbol;
+      } catch (e) {
+        $("tammBalance").textContent = "Read failed: " + errMsg(e);
+      }
+    }
+
+    /* ---------------- configs ---------------- */
+    async function loadConfigs() {
+      setStatus("cfgStatus", "Verifying the V4 core and reading configs at the finalized head\u2026");
+      $("cfgList").innerHTML = "";
+      try {
+        var fin = await rawFinalizedHead();
+        try {
+          await rawVerifyCore(fin);
+          $("coreVal").textContent = "verified @ " + fin.toLocaleString("en-US");
+        } catch (e) {
+          $("coreVal").textContent = "verification failed";
+          setStatus("cfgStatus", "V4 core verification failed at block " + fin.toString() + ": " + errMsg(e), "err");
+          return;
+        }
+        var next = wUint(hexWords(await ethCall(REGISTRY, SEL.nextConfigId, fin))[0]);
+        var total = Number(next) - 1; /* IDs start at 1; next is the exclusive upper bound */
+        var count = Math.min(10, total);
+        setStatus("cfgStatus", "Registry reports next config ID " + next.toString() + " (" + total + " configs exist). Loading the first " + count + " at finalized block " + fin.toLocaleString("en-US") + "\u2026");
+        configsById = {};
+        var list = $("cfgList");
+        for (var id = 1; id <= count; id++) {
+          try {
+            var snap = await rawConfigSnapshot(id, fin);
+            configsById[String(id)] = snap;
+            list.appendChild(configRow(snap));
+          } catch (e) {
+            var row = el("div", "empty-box", "Config #" + id + " failed to read: " + errMsg(e));
+            list.appendChild(row);
+          }
+        }
+        setStatus("cfgStatus", "Loaded " + Object.keys(configsById).length + " of the first " + count + " configs at finalized block " + fin.toLocaleString("en-US") + ". Total configs on this registry: " + total + ".");
+        if (configsById["6"]) selectConfig(6);
+        else if (Object.keys(configsById).length) selectConfig(Number(Object.keys(configsById)[0]));
+      } catch (e) {
+        setStatus("cfgStatus", "Failed to load configs: " + errMsg(e), "err");
+      }
+    }
+
+    function configRow(snap) {
+      var id = Number(snap.configId);
+      var btn = el("button", "cfg-row" + (selectedConfigId === id ? " selected" : ""));
+      btn.type = "button";
+      btn.setAttribute("aria-label", "Show details for config " + id);
+      var c1 = el("span"); c1.appendChild(el("span", "lab", "Config")); c1.appendChild(el("span", "cid", "#" + id));
+      var c2 = el("span"); c2.appendChild(el("span", "lab", "Enabled"));
+      var badge = el("span", "badge " + (snap.enabled ? "on" : "off"), snap.enabled ? "Enabled" : "Disabled");
+      c2.appendChild(badge);
+      var c3 = el("span"); c3.appendChild(el("span", "lab", "Config hash")); c3.appendChild(el("span", "val", snap.configHash.slice(0, 14) + "…"));
+      var c4 = el("span"); c4.appendChild(el("span", "lab", "Owner")); c4.appendChild(el("span", "val", shortAddr(snap.identity.owner)));
+      var c5 = el("span"); c5.appendChild(el("span", "lab", "Quote token")); c5.appendChild(el("span", "val", shortAddr(snap.config.quoteToken)));
+      var c6 = el("span"); c6.appendChild(el("span", "lab", "Migration")); c6.appendChild(el("span", "val", snap.config.migrationMode === 0 ? "0 · Concentrated" : snap.config.migrationMode === 1 ? "1 · Compounding" : String(snap.config.migrationMode)));
+      var c7 = el("span"); c7.appendChild(el("span", "lab", "Segments")); c7.appendChild(el("span", "val", String(snap.segments.length)));
+      [c1, c2, c3, c4, c5, c6, c7].forEach(function (c) { btn.appendChild(c); });
+      btn.addEventListener("click", function () { selectConfig(id); });
+      return btn;
+    }
+
+    function selectConfig(id) {
+      selectedConfigId = id;
+      var rows = $("cfgList").querySelectorAll(".cfg-row");
+      rows.forEach(function (r, i) {
+        var snapId = Number(Object.keys(configsById)[i]);
+        r.classList.toggle("selected", snapId === id);
+      });
+      var snap = configsById[String(id)];
+      if (!snap) return;
+      $("crConfigId").value = String(id);
+      $("crDecimals").value = String(snap.config.tokenDecimals);
+      renderConfigDetail(snap);
+    }
+
+    function renderConfigDetail(snap) {
+      var box = $("cfgDetail");
+      box.innerHTML = "";
+      box.hidden = false;
+      var c = snap.config;
+      box.appendChild(el("h3", null, "Config #" + snap.configId.toString() + " · full on-chain details"));
+      var dl = el("dl", "kv");
+      kvRow(dl, "Enabled", snap.enabled ? "Yes" : "No");
+      kvRow(dl, "Config hash", snap.configHash);
+      kvRow(dl, "Owner", addrCell(snap.identity.owner));
+      kvRow(dl, "Fee claimer", addrCell(snap.identity.feeClaimer));
+      kvRow(dl, "Created at block", snap.identity.createdAtBlock.toString());
+      kvRow(dl, "Fee policy", addrCell(snap.feePolicy));
+      kvRow(dl, "Fee policy version", snap.feePolicyVersion);
+      kvRow(dl, "Read as of block", snap.asOfBlock.toString());
+      box.appendChild(dl);
+
+      box.appendChild(el("p", "subhead", "Economics"));
+      var dl2 = el("dl", "kv");
+      kvRow(dl2, "Quote token", addrCell(c.quoteToken));
+      kvRow(dl2, "Partner recipient", addrCell(c.partnerRecipient));
+      kvRow(dl2, "Pool creation fee", c.poolCreationFee.toString() + " wei (" + fmtEth(c.poolCreationFee) + ")");
+      kvRow(dl2, "Total supply (raw)", c.totalSupply.toString());
+      kvRow(dl2, "Total supply", fmtUnits(c.totalSupply, c.tokenDecimals) + " tokens at " + c.tokenDecimals + " decimals");
+      kvRow(dl2, "Token decimals", String(c.tokenDecimals));
+      kvRow(dl2, "Start sqrt price", c.startSqrtPrice.toString());
+      kvRow(dl2, "Cliff fee", c.cliffFeeBps + " bps");
+      kvRow(dl2, "Creator share of non-protocol fee", c.creatorShareOfNonProtocolBps + " bps");
+      kvRow(dl2, "Migration quote threshold", c.migrationQuoteThreshold.toString() + " wei (" + fmtEth(c.migrationQuoteThreshold) + ")");
+      kvRow(dl2, "Migration base threshold", c.migrationBaseThreshold.toString());
+      kvRow(dl2, "Migration mode", migModeLabel(c.migrationMode));
+      box.appendChild(dl2);
+
+      box.appendChild(el("p", "subhead", "Fee schedule and limits"));
+      var dl3 = el("dl", "kv");
+      kvRow(dl3, "Fee periods", String(c.feeNumberOfPeriods));
+      kvRow(dl3, "Fee period frequency", String(c.feePeriodFrequency));
+      kvRow(dl3, "Fee reduction factor", c.feeReductionFactorBps + " bps");
+      kvRow(dl3, "Fee scheduler mode", schedulerLabel(c.feeSchedulerMode));
+      kvRow(dl3, "Rate limiter enabled", boolText(c.rateLimiterEnabled));
+      kvRow(dl3, "Rate limiter fee increment", c.rateLimiterFeeIncrementBps + " bps");
+      kvRow(dl3, "Rate limiter duration", String(c.rateLimiterDuration));
+      kvRow(dl3, "Rate limiter reference amount", c.rateLimiterReferenceAmount.toString());
+      kvRow(dl3, "Dynamic fee enabled", boolText(c.dynamicFeeEnabled));
+      kvRow(dl3, "Max volatility accumulator", String(c.maxVolatilityAccumulator));
+      kvRow(dl3, "Variable fee control", String(c.variableFeeControl));
+      kvRow(dl3, "Dynamic fee bin step", c.dynamicFeeBinStepBps + " bps");
+      kvRow(dl3, "Dynamic fee filter period", String(c.dynamicFeeFilterPeriod));
+      kvRow(dl3, "Dynamic fee decay period", String(c.dynamicFeeDecayPeriod));
+      kvRow(dl3, "Dynamic fee reduction factor", c.dynamicFeeReductionFactorBps + " bps");
+      kvRow(dl3, "Collect fee mode (launch)", String(c.collectFeeMode) + (c.collectFeeMode === 0 ? " · Quote token" : c.collectFeeMode === 1 ? " · Output token" : ""));
+      kvRow(dl3, "First swap with min fee", boolText(c.enableFirstSwapWithMinFee));
+      box.appendChild(dl3);
+
+      box.appendChild(el("p", "subhead", "Migration and post-migration"));
+      var dl4 = el("dl", "kv");
+      kvRow(dl4, "Leftover receiver", addrCell(c.leftoverReceiver));
+      kvRow(dl4, "Migration quote fee", c.migrationQuoteFeeBps + " bps");
+      kvRow(dl4, "Creator migration fee share", c.creatorMigrationFeeShareBps + " bps");
+      kvRow(dl4, "Post-migration fee", c.postMigrationFeeBps + " bps");
+      kvRow(dl4, "Post-migration compounding fee", c.postMigrationCompoundingFeeBps + " bps");
+      kvRow(dl4, "Post-migration collect fee mode", String(c.postMigrationCollectFeeMode) + (c.postMigrationCollectFeeMode === 0 ? " · Both tokens" : c.postMigrationCollectFeeMode === 1 ? " · Quote token only" : ""));
+      kvRow(dl4, "Post-migration sqrt min price", c.postMigrationSqrtMinPrice.toString());
+      kvRow(dl4, "Post-migration sqrt max price", c.postMigrationSqrtMaxPrice.toString());
+      kvRow(dl4, "Post-migration liquidity", c.postMigrationLiquidity.toString());
+      kvRow(dl4, "Post-migration fee periods", String(c.postMigrationFeeNumberOfPeriods));
+      kvRow(dl4, "Post-migration fee frequency", String(c.postMigrationFeePeriodFrequency));
+      kvRow(dl4, "Post-migration fee reduction", c.postMigrationFeeReductionFactorBps + " bps");
+      kvRow(dl4, "Post-migration fee scheduler", schedulerLabel(c.postMigrationFeeSchedulerMode));
+      kvRow(dl4, "Activation delay", String(c.activationDelay));
+      kvRow(dl4, "Activation type", String(c.activationType) + (c.activationType === 0 ? " · Timestamp" : c.activationType === 1 ? " · Block number" : ""));
+      var ld = c.liquidityDistribution;
+      kvRow(dl4, "Liquidity distribution partner", addrCell(ld.partner));
+      kvRow(dl4, "Partner unlocked / locked", ld.partnerUnlockedBps + " bps / " + ld.partnerPermanentLockedBps + " bps");
+      kvRow(dl4, "Creator permanent locked", ld.creatorPermanentLockedBps + " bps");
+      kvRow(dl4, "Locked base vesting cliff unlock", c.lockedBaseVesting.cliffUnlockAmount.toString());
+      kvRow(dl4, "Locked base vesting per period", c.lockedBaseVesting.amountPerPeriod.toString() + " × " + c.lockedBaseVesting.numberOfPeriods + " periods");
+      box.appendChild(dl4);
+
+      box.appendChild(el("p", "subhead", "Curve segments (" + snap.segments.length + ")"));
+      snap.segments.forEach(function (seg, i) {
+        var dlS = el("dl", "kv");
+        kvRow(dlS, "Segment " + (i + 1) + " lower sqrt price", seg.lowerSqrtPrice.toString());
+        kvRow(dlS, "Segment " + (i + 1) + " upper sqrt price", seg.upperSqrtPrice.toString());
+        kvRow(dlS, "Segment " + (i + 1) + " liquidity", seg.liquidity.toString());
+        box.appendChild(dlS);
+      });
+      var useBtn = el("button", "btn btn-small", "Use config #" + snap.configId.toString() + " in the create form");
+      useBtn.type = "button";
+      useBtn.style.marginTop = "14px";
+      useBtn.addEventListener("click", function () {
+        $("crConfigId").value = snap.configId.toString();
+        $("crDecimals").value = String(snap.config.tokenDecimals);
+        $("createH").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      box.appendChild(useBtn);
+    }
+
+    /* ---------------- launches scan ---------------- */
+    async function scanLaunches() {
+      if (scanning) return;
+      scanning = true;
+      launches = [];
+      $("launchList").innerHTML = "";
+      $("btnScan").disabled = true;
+      var track = $("launchProgressTrack"), fill = $("launchProgressFill");
+      track.hidden = false; fill.style.width = "0%";
+      try {
+        var head = await rawBlockNumber();
+        var WIN = 10000n;
+        var chunks = [];
+        for (var s = START_BLOCK; s <= head; s += WIN) {
+          var e = s + WIN - 1n; if (e > head) e = head;
+          chunks.push([s, e]);
+        }
+        setStatus("launchStatus", "Scanning " + chunks.length + " chunks of 10,000 blocks from " + START_BLOCK.toString() + " to " + head.toString() + "\u2026");
+        var done = 0, failed = [];
+        var found = [];
+        /* Chunks are read 8 at a time inside ONE batched POST, two
+           batches in flight: about 67 POSTs for the whole history
+           instead of 529 individual ones, which is what the public
+           RPC's documented burst limit can actually serve a browser.
+           A chunk whose batch item errors, or whose batch transport
+           failed, is retried once on its own before it is recorded as
+           failed. */
+        var BATCH = 8;
+        var groups = [];
+        for (var g = 0; g < chunks.length; g += BATCH) groups.push(chunks.slice(g, g + BATCH));
+        var gIdx = 0;
+        async function getLogs(f, t) {
+          return rpc("eth_getLogs", [{
+            address: FACTORY,
+            topics: [LAUNCH_CREATED_TOPIC],
+            fromBlock: blockTagOf(f),
+            toBlock: blockTagOf(t)
+          }]);
+        }
+        async function scanWorker() {
+          while (gIdx < groups.length) {
+            var group = groups[gIdx++];
+            var items = null;
+            try {
+              items = await rpcBatch(group.map(function (ch) {
+                return { method: "eth_getLogs", params: [{ address: FACTORY, topics: [LAUNCH_CREATED_TOPIC], fromBlock: blockTagOf(ch[0]), toBlock: blockTagOf(ch[1]) }] };
+              }));
+            } catch (e) { items = null; }
+            for (var k = 0; k < group.length; k++) {
+              var logs = null;
+              if (items) { try { logs = batchItem(items[k]); } catch (e2) { logs = null; } }
+              if (!logs) {
+                try { logs = await getLogs(group[k][0], group[k][1]); }
+                catch (e3) { logs = null; }
+              }
+              if (logs) { for (var i = 0; i < logs.length; i++) found.push(decodeLaunchLog(logs[i])); }
+              else failed.push(group[k][0].toString() + "\u2013" + group[k][1].toString());
+              done++;
+            }
+            fill.style.width = Math.floor((done / chunks.length) * 100) + "%";
+            setStatus("launchStatus", "Scanning\u2026 " + done + " / " + chunks.length + " chunks \u00b7 " + found.length + " launches found so far.");
+          }
+        }
+        await Promise.all([scanWorker(), scanWorker()]);
+        found.sort(function (a, b) { return a.blockNumber === b.blockNumber ? 0 : (a.blockNumber > b.blockNumber ? -1 : 1); });
+        launches = found;
+        renderLaunches();
+        populateCurveSelect();
+        var msg = "Scan complete: " + found.length + " LaunchCreated events from block " + START_BLOCK.toString() + " to " + head.toString() + ".";
+        if (failed.length) msg += " " + failed.length + " chunk(s) failed after a retry: " + failed.slice(0, 4).join(", ") + (failed.length > 4 ? "\u2026" : "") + ". Results may be incomplete; rescan to retry.";
+        setStatus("launchStatus", msg, failed.length ? "err" : "");
+        if (!found.length && !failed.length) {
+          $("launchList").appendChild(el("div", "empty-box", "No launches were found on this factory between block " + START_BLOCK.toString() + " and " + head.toString() + ". That is the real on-chain result for this range; nothing has been invented to fill the list."));
+        }
+        verifyLaunchMappings();
+      } catch (e) {
+        setStatus("launchStatus", "Launch scan failed: " + errMsg(e), "err");
+      } finally {
+        scanning = false;
+        $("btnScan").disabled = false;
+        setTimeout(function () { track.hidden = true; }, 1200);
+      }
+    }
+
+    function renderLaunches() {
+      var list = $("launchList");
+      list.innerHTML = "";
+      launches.forEach(function (log) { list.appendChild(launchCard(log)); });
+    }
+
+    function launchCard(log) {
+      var a = log.args;
+      var card = el("div", "launch-card");
+      card.dataset.curve = a.curve;
+      var row1 = el("div", "row1");
+      var title = el("strong", null, "Launch · block " + log.blockNumber.toString());
+      row1.appendChild(title);
+      var badge = el("span", "badge info", "checking mapping…");
+      badge.className = "badge mapping-badge";
+      row1.appendChild(badge);
+      card.appendChild(row1);
+      var dl = el("dl");
+      kvRow(dl, "Token", addrCell(a.token));
+      kvRow(dl, "Curve", addrCell(a.curve));
+      kvRow(dl, "Creator", addrCell(a.creator));
+      kvRow(dl, "Config ID", a.configId !== undefined ? a.configId.toString() : "?");
+      var txDd = el("dd"); txDd.appendChild(txLink(log.transactionHash, shortAddr(log.transactionHash)));
+      var dtTx = el("dt", null, "Created in tx"); dl.appendChild(dtTx); dl.appendChild(txDd);
+      card.appendChild(dl);
+      var actions = el("div", "form-actions");
+      var tradeBtn = el("button", "btn btn-small btn-teal", "Trade this curve");
+      tradeBtn.type = "button";
+      tradeBtn.addEventListener("click", function () {
+        $("trCurve").value = a.curve;
+        $("trCurveSelect").value = a.curve;
+        $("tradeH").scrollIntoView({ behavior: "smooth", block: "start" });
+        loadCurveState();
+      });
+      actions.appendChild(tradeBtn);
+      var expBtn = link(EXPLORER + "/address/" + a.token, "Token on explorer");
+      expBtn.className = "btn btn-small";
+      actions.appendChild(expBtn);
+      card.appendChild(actions);
+      return card;
+    }
+
+    async function verifyLaunchMappings() {
+      var cards = $("launchList").querySelectorAll(".launch-card");
+      if (!launches.length) return;
+      /* Both getter checks for every launch go out as batched calls
+         (25 per POST), not two requests per launch. */
+      var calls = [];
+      launches.forEach(function (log) {
+        calls.push({ method: "eth_call", params: [{ to: FACTORY, data: SEL.tokenForCurve + encAddr(log.args.curve) }, "latest"] });
+        calls.push({ method: "eth_call", params: [{ to: FACTORY, data: SEL.curveForToken + encAddr(log.args.token) }, "latest"] });
+      });
+      var items = [];
+      for (var i = 0; i < calls.length; i += 25) {
+        var slice = calls.slice(i, i + 25);
+        var sliceItems = null;
+        try { sliceItems = await rpcBatch(slice); } catch (e) { sliceItems = null; }
+        for (var j = 0; j < slice.length; j++) items.push(sliceItems ? sliceItems[j] : null);
+      }
+      for (var n = 0; n < launches.length; n++) {
+        var a = launches[n].args, card = cards[n];
+        if (!card) continue;
+        var badge = card.querySelector(".mapping-badge");
+        try {
+          var tokenForCurve = wAddr(hexWords(batchItem(items[n * 2]))[0]);
+          var curveForToken = wAddr(hexWords(batchItem(items[n * 2 + 1]))[0]);
+          var okMap = tokenForCurve === a.token.toLowerCase() && curveForToken === a.curve.toLowerCase();
+          badge.textContent = okMap ? "tokenForCurve / curveForToken verified" : "mapping mismatch";
+          badge.className = "badge mapping-badge " + (okMap ? "on" : "off");
+        } catch (e) {
+          badge.textContent = "mapping check failed";
+          badge.className = "badge mapping-badge off";
+          badge.title = errMsg(e);
+        }
+      }
+    }
+
+    function populateCurveSelect() {
+      var sel = $("trCurveSelect");
+      var current = sel.value;
+      sel.innerHTML = "";
+      var first = el("option", null, launches.length ? "Pick a launch from the scan…" : "No launches scanned yet");
+      first.value = "";
+      sel.appendChild(first);
+      launches.forEach(function (log) {
+        var o = el("option", null, "Curve " + shortAddr(log.args.curve) + " · token " + shortAddr(log.args.token) + " · block " + log.blockNumber.toString());
+        o.value = log.args.curve;
+        sel.appendChild(o);
+      });
+      if (current) sel.value = current;
+    }
+
+    /* ---------------- wallet: EIP-6963 discovery, picker, network, disconnect ---------------- */
+    function activeProvider() { return selectedProvider || window.ethereum || null; }
+
+    function onAnnounceProvider(event) {
+      try {
+        var detail = event && event.detail;
+        if (!detail || !detail.info || !detail.provider) return;
+        var exists = discovered.some(function (d) { return d.provider === detail.provider || (d.info && detail.info && d.info.uuid && d.info.uuid === detail.info.uuid); });
+        if (!exists) { discovered.push(detail); }
+        if (!$("walletModal").hidden) renderWalletGrid();
+        updateModalNetwork();
+      } catch (e) { /* discovery is best-effort */ }
+    }
+    window.addEventListener("eip6963:announceProvider", onAnnounceProvider);
+    function requestProviderAnnouncements() {
+      try { window.dispatchEvent(new Event("eip6963:requestProvider")); } catch (e) {}
+    }
+
+    function fallbackProviders() {
+      var out = [];
+      function push(p, label) { if (p && typeof p.request === "function" && out.indexOf(p) === -1) out.push(p); }
+      try {
+        if (window.ethereum && Array.isArray(window.ethereum.providers)) window.ethereum.providers.forEach(function (p) { push(p); });
+        push(window.ethereum);
+        push(window.okxwallet); push(window.okxWallet);
+        push(window.coinbaseWalletExtension);
+        if (window.phantom) push(window.phantom.ethereum);
+        push(window.trustwallet); push(window.trustWallet);
+        push(window.rabby);
+        if (window.braveEthereum) push(window.braveEthereum);
+      } catch (e) {}
+      return out;
+    }
+    function findProviderForKnown(kw) {
+      for (var i = 0; i < discovered.length; i++) { if (kw.match(discovered[i].provider, discovered[i].info)) return discovered[i]; }
+      var fbs = fallbackProviders();
+      for (var j = 0; j < fbs.length; j++) { if (kw.match(fbs[j], null)) return { info: { name: kw.name, rdns: kw.rdns }, provider: fbs[j] }; }
+      return null;
+    }
+    function chainNameFor(id) {
+      if (id === CHAIN_ID) return "GIWA Sepolia";
+      if (id === 1) return "Ethereum Mainnet";
+      if (id === 11155111) return "Sepolia";
+      if (id === 56) return "BNB Chain";
+      if (id === 137) return "Polygon";
+      if (id === 42161) return "Arbitrum One";
+      if (id === 10) return "Optimism";
+      if (id === 8453) return "Base";
+      return id == null ? "Unknown" : ("Chain " + id);
+    }
+
+    function updateWalletUI() {
+      var btnC = $("btnConnect"), btnCh = $("btnChangeWallet"), btnD = $("btnDisconnect"), btnS = $("btnSwitchNetwork");
+      var pill = $("walletNetPill"), netName = $("walletNetName");
+      var connPill = $("walletConnPill"), connText = $("walletConnText");
+      var connected = !!account;
+      var onGiwa = walletChainId === CHAIN_ID;
+      if (!connected) {
+        btnC.hidden = false; btnC.disabled = false; btnC.textContent = "Connect Wallet";
+        btnCh.hidden = true; btnD.hidden = true; btnS.hidden = true;
+        pill.className = "net-pill"; netName.textContent = "Not connected";
+        connPill.className = "conn-pill"; connText.textContent = "Not connected";
+      } else {
+        btnC.hidden = true; btnCh.hidden = false; btnD.hidden = false;
+        btnS.hidden = onGiwa;
+        pill.className = "net-pill " + (onGiwa ? "ok" : "warn");
+        netName.textContent = onGiwa ? "GIWA Sepolia · 91342" : (chainNameFor(walletChainId) + (walletChainId != null ? " · " + walletChainId : "") + " — wrong network");
+        connPill.className = "conn-pill " + (onGiwa ? "connected" : "wrongnet");
+        connText.innerHTML = "";
+        connText.appendChild(document.createTextNode("Connected · "));
+        var b = el("b", null, shortAddr(account)); connText.appendChild(b);
+        connText.appendChild(document.createTextNode(" · " + (onGiwa ? "GIWA Sepolia 91342" : chainNameFor(walletChainId))));
+      }
+      updateModalNetwork();
+    }
+    function updateModalNetwork() {
+      var mp = $("modalNetPill"), mn = $("modalNetName"), ms = $("btnModalSwitch");
+      if (!mp) return;
+      if (!account) { mp.className = "net-pill"; mn.textContent = "Target: GIWA Sepolia 91342"; ms.hidden = true; return; }
+      var onGiwa = walletChainId === CHAIN_ID;
+      mp.className = "net-pill " + (onGiwa ? "ok" : "warn");
+      mn.textContent = onGiwa ? "On GIWA Sepolia · 91342" : ("On " + chainNameFor(walletChainId) + (walletChainId != null ? " · " + walletChainId : ""));
+      ms.hidden = onGiwa;
+    }
+
+    async function renderWalletInfo() {
+      var info = $("walletInfo");
+      if (!account) { return; }
+      info.innerHTML = "";
+      var label = selectedWalletName || "Wallet";
+      info.appendChild(el("span", "ok-text", "Connected"));
+      info.appendChild(document.createTextNode(" via " + label + ": "));
+      info.appendChild(el("strong", null, shortAddr(account)));
+      var full = el("span", null, " " + account); full.className = "small"; info.appendChild(full);
+      if (walletChainId === CHAIN_ID) info.appendChild(document.createTextNode(" · GIWA Sepolia (91342)"));
+      else info.appendChild(el("span", "warn-text", " · Wrong network: " + chainNameFor(walletChainId) + (walletChainId != null ? " (" + walletChainId + ")" : "") + ", switch to GIWA Sepolia (91342) to send transactions."));
+      try {
+        var bal = (publicClient && viem) ? await publicClient.getBalance({ address: account }) : await rawGetBalance(account);
+        info.appendChild(document.createTextNode(" · " + fmtEth(bal)));
+      } catch (e) {}
+      updateWalletUI();
+    }
+
+    function renderWalletGrid() {
+      requestProviderAnnouncements();
+      var grid = $("walletGrid"); if (!grid) return;
+      grid.innerHTML = "";
+      var usedProviders = [];
+      KNOWN_WALLETS.forEach(function (kw) {
+        var detail = findProviderForKnown(kw);
+        var card = el("div", "wallet-option");
+        var icon = el("span", "wicon");
+        if (detail && detail.info && detail.info.icon) { var img = document.createElement("img"); img.src = detail.info.icon; img.alt = ""; icon.appendChild(img); }
+        else icon.textContent = kw.initials;
+        card.appendChild(icon);
+        var meta = el("span", "wmeta");
+        meta.appendChild(el("span", "wname", kw.name));
+        meta.appendChild(el("span", "wsub" + (detail ? " detected" : ""), detail ? "Detected · tap to connect" : "Not installed"));
+        meta.querySelector(".wname").style.display = "block"; meta.querySelector(".wsub").style.display = "block";
+        card.appendChild(meta);
+        if (detail) {
+          usedProviders.push(detail.provider);
+          var btn = el("button", "btn btn-small", (account && selectedProvider === detail.provider) ? "Connected" : "Connect");
+          btn.type = "button";
+          btn.addEventListener("click", function () { connectWithProvider(detail, kw.name); });
+          card.appendChild(btn);
+        } else {
+          var a = link(kw.installUrl, "Install"); a.className = "winstall"; card.appendChild(a);
+        }
+        grid.appendChild(card);
+      });
+      /* Extra EIP-6963 wallets not in the known list */
+      discovered.forEach(function (d) {
+        if (usedProviders.indexOf(d.provider) !== -1) return;
+        usedProviders.push(d.provider);
+        var card = el("div", "wallet-option");
+        var icon = el("span", "wicon");
+        if (d.info && d.info.icon) { var img = document.createElement("img"); img.src = d.info.icon; img.alt = ""; icon.appendChild(img); } else icon.textContent = (d.info.name || "W").slice(0, 2);
+        card.appendChild(icon);
+        var meta = el("span", "wmeta");
+        var nm = el("span", "wname", d.info.name || "Browser wallet"); nm.style.display = "block";
+        var sb = el("span", "wsub detected", "Detected · tap to connect"); sb.style.display = "block";
+        meta.appendChild(nm); meta.appendChild(sb); card.appendChild(meta);
+        var btn = el("button", "btn btn-small", "Connect"); btn.type = "button";
+        btn.addEventListener("click", function () { connectWithProvider(d, d.info.name); });
+        card.appendChild(btn); grid.appendChild(card);
+      });
+      /* Generic injected fallback if nothing matched but window.ethereum exists */
+      if (!usedProviders.length && window.ethereum) {
+        var card2 = el("div", "wallet-option");
+        card2.appendChild(el("span", "wicon", "W"));
+        var meta2 = el("span", "wmeta");
+        var n2 = el("span", "wname", "Browser wallet"); n2.style.display = "block";
+        var s2 = el("span", "wsub detected", "Detected (injected) · tap to connect"); s2.style.display = "block";
+        meta2.appendChild(n2); meta2.appendChild(s2); card2.appendChild(meta2);
+        var b2 = el("button", "btn btn-small", "Connect"); b2.type = "button";
+        b2.addEventListener("click", function () { connectWithProvider({ info: { name: "Browser wallet" }, provider: window.ethereum }, "Browser wallet"); });
+        card2.appendChild(b2); grid.appendChild(card2);
+      }
+      if (!discovered.length && !fallbackProviders().length) {
+        grid.appendChild(el("div", "empty-box", "No wallet extension was detected in this browser. Install one above, then tap Rescan extensions."));
+      }
+    }
+
+    function openWalletModal() {
+      requestProviderAnnouncements();
+      renderWalletGrid();
+      /* Give EIP-6963 wallets a moment to announce, then re-render once */
+      setTimeout(function () { if (!$("walletModal").hidden) renderWalletGrid(); }, 350);
+      setStatus("walletModalStatus", "");
+      $("walletModal").hidden = false;
+      updateModalNetwork();
+      var c = $("btnWalletClose"); if (c) c.focus();
+    }
+    function closeWalletModal() { $("walletModal").hidden = true; }
+    /* Backwards-compatible name: the Connect button opens the picker, never auto-connects */
+    function connectWallet() { openWalletModal(); }
+
+    async function ensureGiwaSepolia(provider) {
+      var cidHex = await provider.request({ method: "eth_chainId" });
+      walletChainId = parseInt(cidHex, 16);
+      if (walletChainId === CHAIN_ID) { updateWalletUI(); return true; }
+      try {
+        await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID_HEX }] });
+      } catch (switchErr) {
+        if (switchErr && (switchErr.code === 4902 || switchErr.code === -32603)) {
+          await provider.request({ method: "wallet_addEthereumChain", params: [{ chainId: CHAIN_ID_HEX, chainName: "GIWA Sepolia", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: [RPC_URL], blockExplorerUrls: [EXPLORER] }] });
+        } else if (switchErr && switchErr.code === 4001) {
+          updateWalletUI(); return false; /* user rejected: stay connected on wrong network, UI warns */
+        } else { throw switchErr; }
+      }
+      var cid2 = await provider.request({ method: "eth_chainId" });
+      walletChainId = parseInt(cid2, 16);
+      updateWalletUI();
+      return walletChainId === CHAIN_ID;
+    }
+    async function switchToGiwa() {
+      var p = activeProvider();
+      if (!p) { openWalletModal(); return; }
+      try {
+        var onGiwa = await ensureGiwaSepolia(p);
+        if (account) renderWalletInfo();
+        if (onGiwa && account) { activateWalletReadClient(); refreshReadsAfterRouteChange(); }
+      }
+      catch (e) { $("walletInfo").innerHTML = ""; $("walletInfo").appendChild(el("span", "err-text", "Could not switch network: " + errMsg(e))); }
+    }
+
+    function attachProviderListeners(provider) {
+      if (!provider || !provider.on || providerListenersAttached.has(provider)) return;
+      providerListenersAttached.add(provider);
+      provider.on("accountsChanged", function (accs) {
+        if (provider !== selectedProvider) return;
+        if (!accs || !accs.length) { disconnectWallet(true); return; }
+        account = viem ? viem.getAddress(accs[0]) : accs[0];
+        if (viem && window.__giwaChain) walletClient = viem.createWalletClient({ account: account, chain: window.__giwaChain, transport: viem.custom(provider) });
+        renderWalletInfo(); refreshTammBalance(); if (typeof refreshTradeBalances === "function") refreshTradeBalances();
+      });
+      provider.on("chainChanged", function (hex) {
+        if (provider !== selectedProvider) return;
+        walletChainId = parseInt(hex, 16);
+        if (walletChainId === CHAIN_ID) { if (activateWalletReadClient()) refreshReadsAfterRouteChange(); else refreshChainStatus(); }
+        else { restoreHttpPublicClient(); refreshChainStatus(); }
+        updateWalletUI(); if (account) renderWalletInfo();
+      });
+      provider.on("disconnect", function () { if (provider === selectedProvider) disconnectWallet(true); });
+    }
+
+    async function connectWithProvider(detail, displayName) {
+      var provider = detail && detail.provider;
+      if (!provider) return;
+      setStatus("walletModalStatus", "Opening " + (displayName || "wallet") + "… approve the connection in the extension.");
+      try {
+        selectedProvider = provider; selectedWalletName = (detail.info && detail.info.name) || displayName || "Wallet"; selectedWalletRdns = (detail.info && detail.info.rdns) || null;
+        attachProviderListeners(provider);
+        var accounts = await provider.request({ method: "eth_requestAccounts" });
+        if (!accounts || !accounts.length) throw new Error("The wallet returned no accounts.");
+        account = viem ? viem.getAddress(accounts[0]) : accounts[0];
+        var onGiwa = await ensureGiwaSepolia(provider);
+        if (viem && window.__giwaChain) walletClient = viem.createWalletClient({ account: account, chain: window.__giwaChain, transport: viem.custom(provider) });
+        else walletClient = null;
+        /* Route every read through this wallet from now on (raw layer
+           checks walletReadProvider() per call; the SDK's publicClient
+           is swapped here when viem is ready, and again when the SDK
+           finishes loading if it was not ready yet). */
+        if (onGiwa) activateWalletReadClient();
+        closeWalletModal();
+        updateWalletUI();
+        await renderWalletInfo();
+        if (onGiwa) {
+          $("walletInfo").appendChild(document.createTextNode(" Reads now run through " + (selectedWalletName || "your wallet") + "."));
+          refreshReadsAfterRouteChange();
+        }
+        if (!onGiwa) $("walletInfo").appendChild(el("span", "warn-text", " Still on the wrong network, use Switch to GIWA Sepolia above."));
+        if (!viem) $("walletInfo").appendChild(document.createTextNode(" SDK still loading; creating and trading activate when it finishes" + (sdkLoadError ? " (SDK failed to load, reload to retry)" : "") + "."));
+        $("createWalletNote").hidden = true;
+        refreshTammBalance(); if (typeof refreshTradeBalances === "function") refreshTradeBalances();
+      } catch (e) {
+        setStatus("walletModalStatus", "Connection failed: " + errMsg(e), "err");
+      }
+    }
+
+    async function disconnectWallet(fromEvent) {
+      var provider = selectedProvider;
+      if (provider && !fromEvent) {
+        try { await provider.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] }); } catch (e) { /* not all wallets support revoke; local disconnect still applies */ }
+      }
+      account = null; walletClient = null; selectedProvider = null; selectedWalletName = null; selectedWalletRdns = null; walletChainId = null;
+      restoreHttpPublicClient();
+      var rpcChip = $("rpcVal"); if (rpcChip) { rpcChip.textContent = "connecting…"; rpcChip.title = ""; }
+      closeWalletModal();
+      refreshChainStatus();
+      updateWalletUI();
+      $("walletInfo").textContent = "Wallet disconnected. No wallet connected. Reads keep working; creating and trading need a wallet.";
+      $("createWalletNote").hidden = false;
+      var tb = $("tammBalance"); if (tb) tb.textContent = "Connect wallet";
+      if (typeof refreshTradeBalances === "function") refreshTradeBalances();
+      var cc = $("btnCreateConfirm"); if (cc) cc.disabled = true;
+    }
+
+
+    /* ---------------- create launch ---------------- */
+    var createPreviewData = null;
+
+    async function buildCreatePreview(ev) {
+      if (ev) ev.preventDefault();
+      createPreviewData = null;
+      $("createPreview").hidden = true;
+      $("createConfirmRow").hidden = true;
+      $("createResult").hidden = true;
+      if (!sdk) { setStatus("createStatus", sdkLoadError ? "The SDK failed to load, so previews are unavailable: " + sdkLoadError : "SDK is still loading.", "err"); return; }
+      var name = $("crName").value.trim();
+      var symbol = $("crSymbol").value.trim();
+      var meta = $("crMeta").value.trim();
+      var creatorMeta = $("crCreatorMeta").value.trim();
+      var configIdRaw = $("crConfigId").value.trim();
+      var decimalsRaw = $("crDecimals").value.trim();
+      if (!name) { setStatus("createStatus", "Enter a token name.", "err"); return; }
+      if (!symbol) { setStatus("createStatus", "Enter a token symbol.", "err"); return; }
+      if (!meta) { setStatus("createStatus", "Enter a metadata URI.", "err"); return; }
+      if (!/^\d+$/.test(configIdRaw) || BigInt(configIdRaw) < 1n) { setStatus("createStatus", "Config ID must be a positive whole number.", "err"); return; }
+      var decimals = Number(decimalsRaw);
+      if (!Number.isInteger(decimals) || decimals < 6 || decimals > 9) { setStatus("createStatus", "Decimals must be a whole number from 6 to 9.", "err"); return; }
+      var configId = BigInt(configIdRaw);
+      setStatus("createStatus", "Reading config #" + configId.toString() + " live and building the transaction…");
+      try {
+        var fin = await finalizedHead();
+        var snap = await sdk.getAmmoraV4ConfigAtBlock(publicClient, REGISTRY, configId, fin);
+        if (!snap.enabled) {
+          setStatus("createStatus", "Config #" + configId.toString() + " is disabled on-chain, so the factory would reject this launch. Pick an enabled config.", "err");
+          return;
+        }
+        if (snap.config.tokenDecimals !== decimals) {
+          setStatus("createStatus", "Decimals mismatch: config #" + configId.toString() + " requires " + snap.config.tokenDecimals + " token decimals, but the form says " + decimals + ". Fix the decimals field.", "err");
+          return;
+        }
+        var launch = { name: name, symbol: symbol, metadataURI: meta, creatorMetadataURI: creatorMeta, tokenDecimals: decimals };
+        var built = sdk.buildCreateAmmoraV4Launch(launch, configId, snap.config.poolCreationFee);
+        createPreviewData = { launch: launch, configId: configId, fee: snap.config.poolCreationFee, data: built.data, value: built.value, snap: snap };
+        var box = $("createPreview");
+        box.innerHTML = "";
+        box.appendChild(el("h3", null, "Preview · check every field before confirming"));
+        var dl = el("dl", "kv");
+        kvRow(dl, "Factory (to)", addrCell(FACTORY));
+        kvRow(dl, "Config ID", configId.toString());
+        kvRow(dl, "Config hash", snap.configHash);
+        kvRow(dl, "Config enabled", "Yes");
+        kvRow(dl, "Token name", name, true);
+        kvRow(dl, "Token symbol", symbol, true);
+        kvRow(dl, "Token decimals", String(decimals));
+        kvRow(dl, "Metadata URI", meta);
+        kvRow(dl, "Creator metadata URI", creatorMeta || "(empty)");
+        kvRow(dl, "Pool creation fee", snap.config.poolCreationFee.toString() + " wei (" + fmtEth(snap.config.poolCreationFee) + ")");
+        kvRow(dl, "Transaction value", built.value.toString() + " wei (" + fmtEth(built.value) + ")");
+        kvRow(dl, "Preview built at finalized block", fin.toString());
+        box.appendChild(dl);
+        box.appendChild(el("p", "subhead", "Calldata (exact bytes sent to the factory)"));
+        box.appendChild(el("pre", "calldata", built.data));
+        box.hidden = false;
+        $("createConfirmRow").hidden = false;
+        $("btnCreateConfirm").disabled = !account;
+        setStatus("createStatus", account ? "Preview ready. Confirm below to sign and send with your wallet." : "Preview ready. Connect your wallet to send it.");
+        setStatus("createSendStatus", account ? "" : "Connect wallet first: the Confirm button stays disabled until a wallet is connected.");
+      } catch (e) {
+        setStatus("createStatus", "Preview failed: " + errMsg(e), "err");
+      }
+    }
+
+    async function confirmCreate() {
+      if (!createPreviewData) return;
+      if (!account || !walletClient) { setStatus("createSendStatus", "Connect your wallet first.", "err"); return; }
+      var btn = $("btnCreateConfirm");
+      btn.disabled = true;
+      try {
+        setStatus("createSendStatus", "Waiting for your wallet to sign the create transaction…");
+        var hash = await walletClient.sendTransaction({
+          account: account, chain: window.__giwaChain,
+          to: FACTORY, data: createPreviewData.data, value: createPreviewData.value
+        });
+        setStatus("createSendStatus", "Sent. Waiting for the receipt of tx " + shortAddr(hash) + "…");
+        var receipt = await publicClient.waitForTransactionReceipt({ hash: hash });
+        if (receipt.status !== "success") throw new Error("Transaction reverted on-chain (tx " + hash + ").");
+        var parsed = sdk.parseAmmoraV4LaunchCreatedReceipt(receipt, FACTORY);
+        var box = $("createResult");
+        box.innerHTML = "";
+        box.appendChild(el("h3", null, "Launch created"));
+        var dl = el("dl", "kv");
+        var txDd = el("dd"); txDd.appendChild(txLink(hash, hash)); dl.appendChild(el("dt", null, "Transaction")); dl.appendChild(txDd);
+        kvRow(dl, "New token", addrCell(parsed.token));
+        kvRow(dl, "New curve", addrCell(parsed.curve));
+        kvRow(dl, "Creator", addrCell(parsed.creator));
+        kvRow(dl, "Config ID", parsed.configId.toString());
+        kvRow(dl, "Config hash", parsed.configHash);
+        kvRow(dl, "Receipt block", parsed.receiptBlockNumber.toString());
+        box.appendChild(dl);
+        var tradeBtn = el("button", "btn btn-small btn-teal", "Trade this new curve");
+        tradeBtn.type = "button";
+        tradeBtn.style.marginTop = "12px";
+        tradeBtn.addEventListener("click", function () {
+          $("trCurve").value = parsed.curve;
+          $("tradeH").scrollIntoView({ behavior: "smooth", block: "start" });
+          loadCurveState();
+        });
+        box.appendChild(tradeBtn);
+        box.hidden = false;
+        setStatus("createSendStatus", "Launch confirmed on-chain.");
+        createPreviewData = null;
+        $("createConfirmRow").hidden = true;
+      } catch (e) {
+        setStatus("createSendStatus", "Create failed: " + errMsg(e), "err");
+        btn.disabled = false;
+      }
+    }
+
+    /* ---------------- trade ---------------- */
+    var tradeDir = "buy"; /* buy: quote -> base (baseForQuote=false); sell: base -> quote (true) */
+    var curveState = null, curveTokens = null, tradePreviewData = null;
+
+    function setDir(dir) {
+      tradeDir = dir;
+      $("trDirBuy").classList.toggle("active", dir === "buy");
+      $("trDirSell").classList.toggle("active", dir === "sell");
+      updateDirHint();
+      invalidateTradePreview();
+    }
+    function updateDirHint() {
+      if (curveTokens) {
+        $("trDirHint").textContent = tradeDir === "buy"
+          ? "Pay " + curveTokens.quote.symbol + " (quote), receive " + curveTokens.base.symbol + " (launch token)."
+          : "Pay " + curveTokens.base.symbol + " (launch token), receive " + curveTokens.quote.symbol + " (quote).";
+        $("trAmountHint").textContent = tradeDir === "buy" ? "Amount of " + curveTokens.quote.symbol + " to spend." : "Amount of " + curveTokens.base.symbol + " to sell.";
+      } else {
+        $("trDirHint").textContent = tradeDir === "buy" ? "Pay quote token, receive the launch token." : "Pay the launch token, receive quote token.";
+      }
+    }
+    function invalidateTradePreview() {
+      tradePreviewData = null;
+      $("tradePreview").hidden = true;
+      $("tradeConfirmRow").hidden = true;
+    }
+
+    async function loadCurveState() {
+      invalidateTradePreview();
+      var curve = $("trCurve").value.trim();
+      if (!isAddress(curve)) { setStatus("tradeStateStatus", "Enter a valid curve address (0x, 40 hex characters).", "err"); return; }
+      if (!sdk) { setStatus("tradeStateStatus", sdkLoadError ? "The SDK failed to load, so curve reads are unavailable: " + sdkLoadError : "SDK is still loading.", "err"); return; }
+      curve = viem.getAddress(curve);
+      $("trCurve").value = curve;
+      setStatus("tradeStateStatus", "Reading curve state at the finalized head…");
+      try {
+        var fin = await finalizedHead();
+        var client = new sdk.AmmoraV4LaunchCurveClient(publicClient, curve, { launchFactory: FACTORY, feePolicy: FEE_POLICY });
+        var state = await client.getStateAtBlock(fin);
+        var base = await erc20Info(state.baseToken);
+        var quote = await erc20Info(state.quoteToken);
+        curveState = { state: state, client: client, fin: fin, curve: curve };
+        curveTokens = { base: { address: state.baseToken, name: base.name, symbol: base.symbol, decimals: base.decimals }, quote: { address: state.quoteToken, name: quote.name, symbol: quote.symbol, decimals: quote.decimals } };
+        var box = $("trState");
+        box.innerHTML = "";
+        box.appendChild(el("h3", null, "Curve state · finalized block " + fin.toString()));
+        var dl = el("dl", "kv");
+        kvRow(dl, "Curve", addrCell(curve));
+        kvRow(dl, "Base token (launch)", addrCell(state.baseToken));
+        kvRow(dl, "Base token name / symbol", base.name + " / " + base.symbol, true);
+        kvRow(dl, "Base decimals", String(base.decimals));
+        kvRow(dl, "Quote token", addrCell(state.quoteToken));
+        kvRow(dl, "Quote name / symbol", quote.name + " / " + quote.symbol, true);
+        kvRow(dl, "Quote decimals", String(quote.decimals));
+        kvRow(dl, "Config ID", state.configId.toString());
+        kvRow(dl, "Creator", addrCell(state.creator));
+        kvRow(dl, "Status code", String(state.status));
+        kvRow(dl, "Current fee", state.currentFeeBps + " bps");
+        kvRow(dl, "Current dynamic fee", state.currentDynamicFeeBps + " bps");
+        kvRow(dl, "Base reserve", state.baseReserve.toString() + " (" + fmtUnits(state.baseReserve, base.decimals) + " " + base.symbol + ")");
+        kvRow(dl, "Quote reserve", state.quoteReserve.toString() + " (" + fmtUnits(state.quoteReserve, quote.decimals) + " " + quote.symbol + ")");
+        kvRow(dl, "Migration quote threshold", state.migrationQuoteThreshold.toString() + " (" + fmtUnits(state.migrationQuoteThreshold, quote.decimals) + " " + quote.symbol + ")");
+        kvRow(dl, "Canonical pool", state.canonicalPool === ZERO_ADDRESS ? "Not migrated yet" : state.canonicalPool);
+        box.appendChild(dl);
+        try {
+          var prog = await client.getMigrationProgressAtBlock(fin);
+          var dl2 = el("dl", "kv");
+          kvRow(dl2, "Migration progress", prog.progressBps + " bps · ready: " + boolText(prog.ready) + " · migrated: " + boolText(prog.migrated));
+          box.appendChild(dl2);
+        } catch (e2) { /* progress is extra context; state above is the essential read */ }
+        box.hidden = false;
+        setStatus("tradeStateStatus", "Curve loaded at finalized block " + fin.toString() + ".");
+        updateDirHint();
+        refreshTradeBalances();
+      } catch (e) {
+        curveState = null; curveTokens = null;
+        $("trState").hidden = true;
+        setStatus("tradeStateStatus", "Failed to load curve: " + errMsg(e), "err");
+      }
+    }
+
+    async function refreshTradeBalances() {
+      if (!curveTokens) { $("trBalances").textContent = "Load a curve to see balances."; return; }
+      if (!account) { $("trBalances").textContent = "Connect wallet to see your balances on this curve."; return; }
+      try {
+        var pair = await Promise.all([erc20Balance(curveTokens.quote.address, account), erc20Balance(curveTokens.base.address, account)]);
+        $("trBalances").textContent = fmtUnits(pair[0], curveTokens.quote.decimals) + " " + curveTokens.quote.symbol + " · " + fmtUnits(pair[1], curveTokens.base.decimals) + " " + curveTokens.base.symbol;
+      } catch (e) {
+        $("trBalances").textContent = "Balance read failed: " + errMsg(e);
+      }
+    }
+
+    async function buildTradePreview() {
+      invalidateTradePreview();
+      $("tradeResult").hidden = true;
+      if (!sdk) { setStatus("tradeStatus", sdkLoadError ? "The SDK failed to load, so quotes are unavailable: " + sdkLoadError : "SDK is still loading.", "err"); return; }
+      var curve = $("trCurve").value.trim();
+      if (!isAddress(curve)) { setStatus("tradeStatus", "Enter a valid curve address first.", "err"); return; }
+      if (!curveState || curveState.curve.toLowerCase() !== viem.getAddress(curve).toLowerCase()) {
+        await loadCurveState();
+        if (!curveState) { setStatus("tradeStatus", "Curve state could not be loaded, so no quote was built.", "err"); return; }
+      }
+      var amountStr = $("trAmount").value.trim();
+      if (!/^\d+(\.\d+)?$/.test(amountStr)) { setStatus("tradeStatus", "Enter an amount like 0.001 (digits and one decimal point only).", "err"); return; }
+      var slippage = Number($("trSlippage").value);
+      if (!Number.isInteger(slippage) || slippage < 1 || slippage > 5000) { setStatus("tradeStatus", "Slippage must be a whole number of bps between 1 and 5000.", "err"); return; }
+      var baseForQuote = tradeDir === "sell";
+      var inToken = baseForQuote ? curveTokens.base : curveTokens.quote;
+      var outToken = baseForQuote ? curveTokens.quote : curveTokens.base;
+      var amountIn;
+      try { amountIn = viem.parseUnits(amountStr, inToken.decimals); }
+      catch (e) { setStatus("tradeStatus", "Amount could not be parsed at " + inToken.decimals + " decimals: " + errMsg(e), "err"); return; }
+      if (amountIn <= 0n) { setStatus("tradeStatus", "Amount must be greater than zero.", "err"); return; }
+      setStatus("tradeStatus", "Quoting at the finalized head…");
+      try {
+        var fin = await finalizedHead();
+        var client = curveState.client;
+        var state = await client.getStateAtBlock(fin);
+        var quote = await client.quoteExactInputAtBlock(amountIn, baseForQuote, fin);
+        var fill = sdk.classifyAmmoraV4ExactInputFill(quote, baseForQuote);
+        var minOut = (quote.amountOut * BigInt(10000 - slippage)) / 10000n;
+        var plan = null, planErr = null;
+        if (account) {
+          try {
+            var deadline = BigInt(Math.floor(Date.now() / 1000) + 1200);
+            plan = await client.planSwapExactInput({
+              includedAmountIn: amountIn, baseForQuote: baseForQuote,
+              allowPartialFill: fill.allowPartialFill, slippageBps: slippage,
+              recipient: account, deadline: deadline
+            });
+          } catch (e) { planErr = e; }
+        }
+        tradePreviewData = { curve: curveState.curve, baseForQuote: baseForQuote, amountIn: amountIn, slippage: slippage, quote: quote, fill: fill, plan: plan, fin: fin, inToken: inToken, outToken: outToken };
+        var box = $("tradePreview");
+        box.innerHTML = "";
+        box.appendChild(el("h3", null, "Quote preview · finalized block " + fin.toString()));
+        var dl = el("dl", "kv");
+        kvRow(dl, "Direction", baseForQuote ? "Sell: " + inToken.symbol + " → " + outToken.symbol : "Buy: " + inToken.symbol + " → " + outToken.symbol, true);
+        kvRow(dl, "Amount in", amountIn.toString() + " (" + fmtUnits(amountIn, inToken.decimals) + " " + inToken.symbol + ")");
+        kvRow(dl, "Expected output", quote.amountOut.toString() + " (" + fmtUnits(quote.amountOut, outToken.decimals) + " " + outToken.symbol + ")");
+        kvRow(dl, "Minimum output (" + slippage + " bps slippage)", (plan ? plan.quote.minimumAmountOut : minOut).toString() + " (" + fmtUnits(plan ? plan.quote.minimumAmountOut : minOut, outToken.decimals) + " " + outToken.symbol + ")");
+        kvRow(dl, "Fee", quote.fee.toString() + " (" + fmtUnits(quote.fee, inToken.decimals) + " " + inToken.symbol + ")");
+        kvRow(dl, "Unfilled remainder", quote.amountLeft.toString() + " (" + fmtUnits(quote.amountLeft, inToken.decimals) + " " + inToken.symbol + ")");
+        kvRow(dl, "Fill kind (SDK classification)", fill.kind, true);
+        kvRow(dl, "Consumed / refundable", fill.consumedAmountIn.toString() + " / " + fill.refundableAmountIn.toString());
+        kvRow(dl, "Curve fee at this block", state.currentFeeBps + " bps");
+        if (plan) {
+          kvRow(dl, "Swap goes to (curve)", addrCell(plan.transaction.to));
+          kvRow(dl, "Approval needed", plan.approvalRequirement.amount > 0n ? "Approve " + plan.approvalRequirement.amount.toString() + " of token " + shortAddr(plan.approvalRequirement.token) + " to spender " + shortAddr(plan.approvalRequirement.spender) + " if allowance is lower (checked again at confirm)" : "None");
+        }
+        box.appendChild(dl);
+        if (plan) {
+          box.appendChild(el("p", "subhead", "swapExactInput calldata (exact bytes from the SDK plan)"));
+          box.appendChild(el("pre", "calldata", plan.transaction.data));
+        } else if (account && planErr) {
+          box.appendChild(el("p", "warn-text", "The quote succeeded, but the SDK swap plan failed: " + errMsg(planErr) + ". Confirm stays disabled; fix the cause and preview again."));
+        } else {
+          box.appendChild(el("p", "warn-text", "Quote only: connect your wallet to generate the exact swapExactInput calldata preview and to trade."));
+        }
+        if (fill.kind !== "full") {
+          box.appendChild(el("p", "warn-text", "This quote is a " + fill.kind + " fill, not a full fill. Review the consumed and refundable amounts above before confirming."));
+        }
+        box.hidden = false;
+        var canConfirm = !!plan && !!account;
+        $("tradeConfirmRow").hidden = !canConfirm;
+        setStatus("tradeStatus", canConfirm ? "Preview ready. Confirm below to sign and send." : "Preview ready (quote only).");
+      } catch (e) {
+        setStatus("tradeStatus", "Quote failed: " + errMsg(e), "err");
+      }
+    }
+
+    async function confirmTrade() {
+      if (!tradePreviewData || !tradePreviewData.plan) { setStatus("tradeSendStatus", "Build a fresh preview with a wallet connected first.", "err"); return; }
+      if (!account || !walletClient) { setStatus("tradeSendStatus", "Connect your wallet first.", "err"); return; }
+      var btn = $("btnTradeConfirm");
+      btn.disabled = true;
+      try {
+        /* Re-plan fresh so the signed transaction matches current chain state. */
+        setStatus("tradeSendStatus", "Re-planning the swap at the current head…");
+        var p = tradePreviewData;
+        var deadline = BigInt(Math.floor(Date.now() / 1000) + 1200);
+        var plan = await curveState.client.planSwapExactInput({
+          includedAmountIn: p.amountIn, baseForQuote: p.baseForQuote,
+          allowPartialFill: p.fill.allowPartialFill, slippageBps: p.slippage,
+          recipient: account, deadline: deadline
+        });
+        var req = plan.approvalRequirement;
+        if (req && req.amount > 0n) {
+          var allowance = await publicClient.readContract({ address: req.token, abi: viem.erc20Abi, functionName: "allowance", args: [account, req.spender] });
+          if (allowance < req.amount) {
+            setStatus("tradeSendStatus", "Approval needed: approving " + req.amount.toString() + " of " + shortAddr(req.token) + " to the curve. Confirm in your wallet…");
+            var aHash = await walletClient.writeContract({
+              account: account, chain: window.__giwaChain, address: req.token, abi: viem.erc20Abi,
+              functionName: "approve", args: [req.spender, req.amount]
+            });
+            var aReceipt = await publicClient.waitForTransactionReceipt({ hash: aHash });
+            if (aReceipt.status !== "success") throw new Error("Approval transaction reverted (tx " + aHash + ").");
+            setStatus("tradeSendStatus", "Approval confirmed. Now confirm the swap in your wallet…");
+          }
+        }
+        var hash = await walletClient.sendTransaction({
+          account: account, chain: window.__giwaChain,
+          to: plan.transaction.to, data: plan.transaction.data, value: plan.transaction.value || 0n
+        });
+        setStatus("tradeSendStatus", "Swap sent. Waiting for the receipt of tx " + shortAddr(hash) + "…");
+        var receipt = await publicClient.waitForTransactionReceipt({ hash: hash });
+        if (receipt.status !== "success") throw new Error("Swap transaction reverted on-chain (tx " + hash + ").");
+        var box = $("tradeResult");
+        box.innerHTML = "";
+        box.appendChild(el("h3", null, "Swap confirmed"));
+        var dl = el("dl", "kv");
+        var txDd = el("dd"); txDd.appendChild(txLink(hash, hash)); dl.appendChild(el("dt", null, "Transaction")); dl.appendChild(txDd);
+        try {
+          var parsed = sdk.parseAmmoraV4SwapReceipt(receipt, p.curve, { trader: account, recipient: account, baseForQuote: p.baseForQuote, requestedAmountIn: p.amountIn });
+          kvRow(dl, "Amount out (from receipt)", parsed.amountOut.toString() + " (" + fmtUnits(parsed.amountOut, p.outToken.decimals) + " " + p.outToken.symbol + ")");
+          kvRow(dl, "Consumed input", parsed.consumedAmountIn.toString() + " (" + fmtUnits(parsed.consumedAmountIn, p.inToken.decimals) + " " + p.inToken.symbol + ")");
+          kvRow(dl, "Fee (from receipt)", parsed.fee.toString() + " (" + fmtUnits(parsed.fee, p.inToken.decimals) + " " + p.inToken.symbol + ")");
+          kvRow(dl, "Receipt block", parsed.receiptBlockNumber.toString());
+        } catch (e) {
+          kvRow(dl, "Receipt parse", "Swap succeeded on-chain; SDK receipt parsing reported: " + errMsg(e), true);
+        }
+        box.appendChild(dl);
+        box.hidden = false;
+        setStatus("tradeSendStatus", "Swap confirmed on-chain.");
+        invalidateTradePreview();
+        refreshTradeBalances();
+        refreshTammBalance();
+        renderWalletInfo();
+      } catch (e) {
+        setStatus("tradeSendStatus", "Swap failed: " + errMsg(e), "err");
+        btn.disabled = false;
+      }
+    }
+
+    /* ---------------- wiring ---------------- */
+    $("btnConnect").addEventListener("click", connectWallet);
+    $("btnChangeWallet").addEventListener("click", openWalletModal);
+    $("btnDisconnect").addEventListener("click", function () { disconnectWallet(false); });
+    $("btnSwitchNetwork").addEventListener("click", switchToGiwa);
+    $("btnWalletClose").addEventListener("click", closeWalletModal);
+    $("btnRescanWallets").addEventListener("click", function () { discovered = discovered.slice(); renderWalletGrid(); setStatus("walletModalStatus", "Rescanned. If you just installed a wallet, reload the page if it still does not appear."); });
+    $("btnModalSwitch").addEventListener("click", switchToGiwa);
+    $("walletModal").addEventListener("click", function (ev) { if (ev.target === this) closeWalletModal(); });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !$("walletModal").hidden) closeWalletModal(); });
+    requestProviderAnnouncements();
+    updateWalletUI();
+    $("btnCfgRefresh").addEventListener("click", loadConfigs);
+    $("btnTammRefresh").addEventListener("click", loadTamm);
+    $("btnScan").addEventListener("click", scanLaunches);
+    $("createForm").addEventListener("submit", buildCreatePreview);
+    $("btnCreateConfirm").addEventListener("click", confirmCreate);
+    $("btnLoadCurve").addEventListener("click", loadCurveState);
+    $("btnTradePreview").addEventListener("click", buildTradePreview);
+    $("btnTradeConfirm").addEventListener("click", confirmTrade);
+    $("trCurveSelect").addEventListener("change", function () {
+      if (this.value) { $("trCurve").value = this.value; loadCurveState(); }
+    });
+    $("trCurve").addEventListener("input", function () { invalidateTradePreview(); });
+    $("trDirBuy").addEventListener("click", function () { setDir("buy"); });
+    $("trDirSell").addEventListener("click", function () { setDir("sell"); });
+    $("trAmount").addEventListener("input", invalidateTradePreview);
+    $("trSlippage").addEventListener("input", invalidateTradePreview);
+    ["crName", "crSymbol", "crMeta", "crCreatorMeta", "crConfigId", "crDecimals"].forEach(function (id) {
+      $(id).addEventListener("input", function () {
+        createPreviewData = null;
+        $("createConfirmRow").hidden = true;
+      });
+    });
+
+    boot();
+    </script>
+  </body>
+</html>
